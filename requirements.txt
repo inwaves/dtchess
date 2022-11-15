@@ -1,0 +1,15 @@
+einops
+fancy_einsum
+ipykernel
+ipywidgets
+jupyter
+matplotlib
+notebook
+numpy-stl
+open_spiel
+plotly
+torch
+transformers
+tqdm
+wandb
+zstandard

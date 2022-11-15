@@ -1,0 +1,20 @@
+name: audit-games
+dependencies:
+  - python>=3.8
+  - ipykernel
+  - ipywidgets
+  - jupyter
+  - matplotlib
+  - notebook
+  - plotly
+  - pip
+  - transformers
+  - tqdm
+  - zstandard
+  - pip:
+    - einops
+    - fancy_einsum
+    - numpy-stl
+    - open_spiel
+    - torch
+    - wandb
