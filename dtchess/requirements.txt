@@ -8,6 +8,7 @@ notebook
 numpy-stl
 open_spiel
 plotly
+python-chess
 torch
 transformers
 tqdm
