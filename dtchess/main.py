@@ -1,6 +1,7 @@
-import models.decision_transformer as dt
+from dtchess.utils.utils import parse_args, setup
 
 MAIN = __name__ == "__main__"
 
 if MAIN:
-    dt.create_model()
+    args = parse_args()
+    tokeniser, model, optimiser, dataloaders = setup(args)
