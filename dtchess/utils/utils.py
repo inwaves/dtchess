@@ -36,16 +36,32 @@ def setup(args: dict) -> Tuple[
 
 
 def preprocess_data(tokeniser: GPT2Tokenizer, args: dict) -> Tuple[DataLoader, DataLoader]:
-    # TODO: how to preprocess .PGN data?
-    print(os.getcwd())
+    """Converts PGN data into sequences usable by our model, then wraps them in DataLoaders.
+       This should allow the use of CLI args to switch between different modes of parsing the file:
+        - convert to "[<ELO>|<OUTCOME>|<EVALS>] move1 move2 ..."
+        - convert to "[<ELO>|<OUTCOME>|<EVALS>] board1 board2 ..."
+    """
     pgn_file = open("./dtchess/data/sample.pgn")
     game = pgn.read_game(pgn_file)
+    elo = game.headers["WhiteElo"]
+    result= game.headers["Result"]
     all_nodes = []
     while game.next():
         next_node = game.next()
         all_nodes.append(next_node)
         game = next_node
-    moves_and_evals = [(node.move.uci(), node.eval().relative.cp) for node in all_nodes]
-    print(moves_and_evals)
+    moves = [node.move.uci() for node in all_nodes]
+    evals = [node.eval().relative.cp for node in all_nodes]
+    white_total_loss = sum(evals[::2])
+    black_total_loss = sum(evals[1::2])
+    sequence = ""
+    if args.sequence_type == "full":
+        sequence = f"<ELO>{elo}</ELO> <RES>{result}</RES> <RET>{white_total_loss}</RET> {' '.join(moves)}"
+    elif args.sequence_type == "elo":
+        sequence = f"<ELO>{elo}</ELO> {' '.join(moves)}"
+    elif args.sequence_type == "result":
+        sequence = f"<RES>{result}</RES> {' '.join(moves)}"
+        
 
     return None, None
+
