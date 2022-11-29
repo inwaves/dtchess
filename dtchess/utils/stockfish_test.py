@@ -1,5 +1,4 @@
 import os
-import chess
 import chess.engine as engine
 import chess.pgn as pgn
 
