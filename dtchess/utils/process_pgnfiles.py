@@ -6,8 +6,10 @@ output_filepath = "./dtchess/data/sequences"
 output_file = open(output_filepath, "a+")
 
 
-def process_file(filepath):
-    file = open(filepath, "r")
+def process_file(file):
+    # This needs to be able to read the file; it shouldn't
+    # lock read access, though. Once the game data is in this object,
+    # all further processing doesn't touch the file.
     game = pgn.read_game(file)
 
     while game:
@@ -41,7 +43,7 @@ def process_file(filepath):
             body = f"{' '.join(boards)}"
 
         # Append sequence to file.
-        with open(f"{output_filepath}_{filepath[2:-4]}.txt", "a+") as f:
+        with open(f"{output_filepath}_{file.name[2:-4]}.txt", "a+") as f:
             f.write(f"{header}||{body}")
 
         # Move onto the next game.
@@ -50,8 +52,9 @@ def process_file(filepath):
 
 if __name__ == "__main__":
     mp.set_start_method("fork")
-    filepaths = ["./antichess1.pgn", "./antichess2.pgn"]
-    processes = [mp.Process(target=process_file, args=(filepath,)) for filepath in filepaths]
+    filepaths = ["./antichess1.pgn"]
+    # filepaths = ["../data/standard_10.pgn"]
+    processes = [mp.Process(target=process_file, args=(open(filepaths[0], "r"),)) for _ in range(mp.cpu_count())]
     for process in processes:
         process.start()
 
