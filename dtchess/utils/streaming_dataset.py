@@ -1,19 +1,26 @@
+from itertools import chain
+
 from torch.utils.data import IterableDataset
+import chess.pgn as pgn
 
 
 class StreamingDataset(IterableDataset):
 
-    def __init__(self, file_path):
+    def __init__(self, dirpath):
         super().__init__()
-        self.file_path = file_path
+        self.dirpath = dirpath
 
-    def parse_file(self, file_path):
-        with open(file_path, "r") as game_file:
-            game = pgn.read_game(game_file)
-            while game is not None:
-                # TODO: I don't think I want args here.
-                token_sequence = process_game(game, args["sequence_type"])
-                yield from token_sequence
+    def parse_directory(self):
+        pgnfiles = (open(file, "r") for file in self.dirpath)
+        yield from pgnfiles
+
+    def parse_pgn(self, pgnfile):
+        yield from pgn.read_game(pgnfile)
+
+    def game_to_sequence(self, game):
+        sequence = None
+        # process the game into a sequence as in utils.
+        yield from sequence
 
     def __iter__(self, ):
-        return self.parse_file(self.file_path)
+        return chain(self.game_to_sequence(self.parse_pgn(self.parse_directory())))
