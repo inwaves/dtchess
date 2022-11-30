@@ -1,9 +1,7 @@
 import chess.pgn as pgn
 import multiprocessing as mp
 
-output_filepath = "./dtchess/data/sequences"
-
-output_file = open(output_filepath, "a+")
+output_filepath = "./dtchess/data/sequences/seq"
 
 
 def process_file(file):
@@ -43,8 +41,9 @@ def process_file(file):
             body = f"{' '.join(boards)}"
 
         # Append sequence to file.
-        with open(f"{output_filepath}_{file.name[2:-4]}.txt", "a+") as f:
-            f.write(f"{header}||{body}")
+        destination_path = f"{output_filepath}_{file.name.split('/')[-1][:-4]}.txt"
+        with open(destination_path, "a+") as f:
+            f.write(f"{header}||{body}\n")
 
         # Move onto the next game.
         game = pgn.read_game(file)
@@ -52,8 +51,8 @@ def process_file(file):
 
 if __name__ == "__main__":
     mp.set_start_method("fork")
-    filepaths = ["./antichess1.pgn"]
-    # filepaths = ["../data/standard_10.pgn"]
+    # filepaths = ["./antichess1.pgn"]
+    filepaths = ["../data/standard_10.pgn"]
     processes = [mp.Process(target=process_file, args=(open(filepaths[0], "r"),)) for _ in range(mp.cpu_count())]
     for process in processes:
         process.start()
