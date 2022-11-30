@@ -46,24 +46,28 @@ def process_game(game: pgn.Game, sequence_type: str) -> str:
     result = game.headers["Result"]
 
     # Play the game until the end, remembering moves, evals and board states.
-    all_nodes, boards = [], []
+    moves, evals, boards = [], [], []
     board = game.board()
     while game.next():
         # We don't remember the initial board state, it's always the same.
+        move = game.variation(0).move
         board.push(game.mainline_moves()[0])
-        boards.append(board.copy())
+        boards.append(board.fen())
+        moves.append(move.uci())
 
-        next_node: Optional[ChildNode] = game.next()
-        all_nodes.append(next_node)
-        game = next_node
-    moves = [node.move.uci() for node in all_nodes]
-    evals = [node.eval().relative.cp for node in all_nodes]
+        # Not all game files have evals.
+        if game.eval() and hasattr(game.eval().relative, "cp"):
+            evals.append(game.eval().relative.cp)
+
+        game = game.next()
+    # TODO: Assert that moves, evals and boards are the correct shape.
 
     # A sequence comprises a header and a body.
     # The header contains some combination of ELO, game result and total return tokens.
     # The body is either a sequence of moves or boards, with or without the evals of these from a chess engine.
     header_type, body_type = sequence_type.split(":")
-    if header_type == "full":
+    evals_present = len(evals) > 0
+    if header_type == "full" and evals_present:
         # "<ELO>[ELO]</ELO> <RES>[RES]</RES> <RET>[RETURN]</RET> [MOVE1] [MOVE2] ..."
         white_total_loss = sum(evals[::2])
         header = f"<ELO>{elo}</ELO> <RES>{result}</RES> <RET>{white_total_loss}</RET>"
@@ -75,17 +79,18 @@ def process_game(game: pgn.Game, sequence_type: str) -> str:
         header = f"<RES>{result}</RES>"
 
     # Header can be blank if we want to feed in just the board/move with or without evals.
+    # TODO: these should flag if evals are not present.
     elif body_type == "moves":
         # "[MOVE1] [MOVE2] ...".
         body = f"{' '.join(moves)}"
     elif body_type == "boards":
         # "[BOARD1] [BOARD2] ...
         body = f"{' '.join(boards)}"
-    elif body_type == "evalmoves":
+    elif body_type == "evalmoves" and evals_present:
         # "[MOVE1] [EVAL1] [MOVE2] [EVAL2] ...".
         moves_evals_sequence = ' '.join(list(zip(moves, evals)))
         body = f"{' '.join(moves_evals_sequence)}"
-    elif sequence_type == "evalboards":
+    elif sequence_type == "evalboards" and evals_present:
         # "[BOARD1] [EVAL1] [BOARD2] [EVAL2] ...".
         boards_evals_sequence = ' '.join(list(zip(boards, evals)))
         body = f"{' '.join(boards_evals_sequence)}"

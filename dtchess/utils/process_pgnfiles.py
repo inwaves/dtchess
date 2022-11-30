@@ -2,7 +2,7 @@ import chess.pgn as pgn
 import time
 import multiprocessing as mp
 
-output_filepath = "./dtchess/data/sequences.txt"
+output_filepath = "./dtchess/data/sequences"
 
 output_file = open(output_filepath, "a+")
 
@@ -43,4 +43,3 @@ if __name__ == "__main__":
     p2.start()
     p1.join()
     p2.join()
-    
