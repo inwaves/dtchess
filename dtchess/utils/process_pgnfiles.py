@@ -1,18 +1,24 @@
 import chess.pgn as pgn
 import multiprocessing as mp
 
-output_filepath = "./dtchess/data/sequences/seq"
+output_filepath = "./dtchess/data/sequences"
 
 
-def process_file(file):
+def process_file(file, read_lock, write_lock):
     # This needs to be able to read the file; it shouldn't
     # lock read access, though. Once the game data is in this object,
     # all further processing doesn't touch the file.
-    game = pgn.read_game(file)
+
+    # TODO: It doesn't look like this is working correctly by reading one game and then releasing.
+    read_lock.acquire()
+    try:
+        game = pgn.read_game(file)
+    finally:
+        read_lock.release()
 
     while game:
-        elo = game.headers["WhiteElo"]
-        result = game.headers["Result"]
+        elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
+        result = game.headers["Result"] if "Result" in game.headers else None
 
         # Parse the GameNode object into moves, evals and boards.
         evals, boards = [], []
@@ -31,29 +37,41 @@ def process_file(file):
             game = game.next()
 
         # Use the moves, evals and boards to generate a sequence.
-        header = f"<ELO>{elo}</ELO> <RES>{result}</RES>"
+        if elo is not None and result is not None:
+            header = f"<ELO>{elo}</ELO> <RES>{result}</RES>"
+        else:
+            header = ""
         if len(evals) > 0:  # i.e. if there are evals at all, use them.
             white_total_loss = sum(evals[::2])
             header = f"{header} <RET>{white_total_loss}</RET>"
-            boards_evals_sequence = ' '.join([f"{board} {ev}" for (board, ev) in zip(boards, evals)])
-            body = f"{' '.join(boards_evals_sequence)}"
-        else:   # otherwise, just use the board states.
-            body = f"{' '.join(boards)}"
+            body = '||'.join([f"{board}::{ev}" for (board, ev) in zip(boards, evals)])
+        else:  # otherwise, just use the board states.
+            body = f"{'||'.join(boards)}"
 
         # Append sequence to file.
-        destination_path = f"{output_filepath}_{file.name.split('/')[-1][:-4]}.txt"
-        with open(destination_path, "a+") as f:
-            f.write(f"{header}||{body}\n")
+        write_lock.acquire()
+        try:
+            with open(f"{output_filepath}_{file.name[2:-4]}.txt", "a+") as f:
+                f.write(f"{header} {body}\n")
+        finally:
+            write_lock.release()
 
         # Move onto the next game.
-        game = pgn.read_game(file)
+        read_lock.acquire()
+        try:
+            game = pgn.read_game(file)
+        finally:
+            read_lock.release()
 
 
 if __name__ == "__main__":
     mp.set_start_method("fork")
-    # filepaths = ["./antichess1.pgn"]
-    filepaths = ["../data/standard_10.pgn"]
-    processes = [mp.Process(target=process_file, args=(open(filepaths[0], "r"),)) for _ in range(mp.cpu_count())]
+    filepath = "./antichess1.pgn"
+    file = open(filepath, "r")
+    # filepaths = ["../data/standard_10.pgn"]
+
+    read_lock, write_lock = mp.Lock(), mp.Lock()
+    processes = [mp.Process(target=process_file, args=(file, read_lock, write_lock)) for _ in range(mp.cpu_count())]
     for process in processes:
         process.start()
 
