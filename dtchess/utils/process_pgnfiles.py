@@ -80,19 +80,19 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             body = f"{'||'.join(boards)}"
 
         # Append sequence to file.
-        # write_lock.acquire()
+        write_lock.acquire()
         try:
-            with open(f"{output_filepath}_{os.getpid()}.txt", "a+") as f:
+            with open(f"{output_filepath}.txt", "a+") as f:
                 f.write(f"{header} {body}\n")
                 num_games += 1
                 # print(f"Worker proc: put game {game}")
         finally:
             pass
-            # write_lock.release()
+            write_lock.release()
         total_elapsed += time.time() - start
 
-    print(f"WP {os.getpid()} took {total_elapsed/num_games:.2f}s to process a game.")
-    print(f"WP {os.getpid()}: no more to read after {num_games} games written.")
+    print(f"WP {os.getpid()} processed {num_games} games, taking"
+          f"{total_elapsed/num_games:.2f}s on average.")
 
 
 if __name__ == "__main__":
@@ -102,14 +102,16 @@ if __name__ == "__main__":
     output_filepath = f"./dtchess/data/sequences_{input_filepath[2:-4]}"
     written, errs = 0, 0
 
-    # Spawn processes to read games from a PGN file and convert them to string sequences.
+    # Spawn processes to read games from a PGN file and
+    # convert them to string sequences.
     write_lock = mp.Lock()
     game_queue: Queue = Queue()
     reader_process = mp.Process(
         target=read_games, args=(input_filepath, game_queue, written, errs)
     )
     sequencing_processes = [
-        mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
+        mp.Process(target=sequence_game,
+                   args=(output_filepath, write_lock, game_queue))
         for _ in range(NUM_CORES - 1)
     ]
 
