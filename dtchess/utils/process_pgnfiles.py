@@ -29,7 +29,7 @@ def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) 
                 lines = []
                 newline_ctr = 0
 
-    print(f"RP {os.getpid()} took {time.time()-start:.2f}s to process {written} games.")
+    print(f"RP {os.getpid()} took {time.time()-start:.4f}s to process {written} games.")
 
 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
@@ -91,15 +91,16 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             write_lock.release()
         total_elapsed += time.time() - start
 
-    print(f"WP {os.getpid()} processed {num_games} games, taking"
-          f"{total_elapsed/num_games:.2f}s on average.")
+    print(f"WP {os.getpid()} processed {num_games} games, taking "
+          f"{total_elapsed/num_games:.4f}s on average.")
 
 
 if __name__ == "__main__":
     print(f"{NUM_CORES=}")
     mp.set_start_method("fork")
-    input_filepath = "./antichess2.pgn"
-    output_filepath = f"./dtchess/data/sequences_{input_filepath[2:-4]}"
+    input_filepath = "../data/antichess1.pgn"
+    output_filepath = f"./dtchess/data/sequences_{input_filepath.split('/')[-1][:-4]}"
+    print(output_filepath)
     written, errs = 0, 0
 
     # Spawn processes to read games from a PGN file and
