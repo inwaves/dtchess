@@ -36,6 +36,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
     num_games = 0
     total_elapsed: int = 0  # Total time taken to process games.
     while not game_queue.empty():
+        print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
         # This is a string representing a game.
         game_string = game_queue.get()
         try:
