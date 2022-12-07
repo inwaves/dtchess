@@ -1,39 +1,40 @@
 import chess.pgn as pgn
 import multiprocessing as mp
-import dill
-
 from multiprocessing import Queue
 from threading import Lock
-from typing import NoReturn
-
 import time
 import io
 import os
 
 output_filepath = "./dtchess/data/sequences"
 NUM_CORES = mp.cpu_count()
-LINES_PER_GAME = 18
 
 
 def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) -> None:
     # Fetch one game for each process but this one, and put it to the shared queue.
+    start = time.time()
     with open(input_filepath, "r", encoding="utf-8") as pgnfile:
-        ctr = 0
+        # There are always newlines between games; but games also contain
+        # a newline between the headers and the moves.
+        newline_ctr = 0
         lines = []
         for line in pgnfile:
-            if ctr < LINES_PER_GAME:
+            if newline_ctr < 2:
                 lines += [line]
-                ctr += 1
+                newline_ctr += 1 if line == "\n" else 0
             else:
                 game = "".join(lines)
                 game_queue.put(game)
                 written += 1
                 lines = []
-                ctr = 0
+                newline_ctr = 0
+
+    print(f"RP {os.getpid()} took {time.time()-start:.2f}s to process {written} games.")
 
 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
-    written = 0
+    num_games = 0
+    total_elapsed: int = 0  # Total time taken to process games.
     while not game_queue.empty():
         # This is a string representing a game.
         game_string = game_queue.get()
@@ -45,6 +46,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             )
         elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
         result = game.headers["Result"] if "Result" in game.headers else None
+        start = time.time()
 
         # Parse the GameNode object into moves, evals and boards.
         evals, boards = [], []
@@ -82,12 +84,15 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
         try:
             with open(f"{output_filepath}_{os.getpid()}.txt", "a+") as f:
                 f.write(f"{header} {body}\n")
-                written += 1
+                num_games += 1
                 # print(f"Worker proc: put game {game}")
         finally:
             pass
             # write_lock.release()
-    # print(f"WP: no more to read after {written} games written.")
+        total_elapsed += time.time() - start
+
+    print(f"WP {os.getpid()} took {total_elapsed/num_games:.2f}s to process a game.")
+    print(f"WP {os.getpid()}: no more to read after {num_games} games written.")
 
 
 if __name__ == "__main__":
