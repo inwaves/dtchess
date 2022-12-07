@@ -15,4 +15,3 @@ def create_model() -> Tuple[GPT2Model, GPT2Tokenizer]:
 
     # TODO: Fine-tune on chess data.
     return tokeniser, model
-

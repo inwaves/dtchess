@@ -5,7 +5,6 @@ import chess.pgn as pgn
 
 
 class StreamingDataset(IterableDataset):
-
     def __init__(self, dirpath):
         super().__init__()
         self.dirpath = dirpath
@@ -22,5 +21,7 @@ class StreamingDataset(IterableDataset):
         # process the game into a sequence as in utils.
         yield from sequence
 
-    def __iter__(self, ):
+    def __iter__(
+        self,
+    ):
         return chain(self.game_to_sequence(self.parse_pgn(self.parse_directory())))

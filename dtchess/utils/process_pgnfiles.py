@@ -40,7 +40,9 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
         try:
             game = pgn.read_game(io.StringIO(game_string))
         except ValueError:
-            print(f"!!!!GAME DID NOT LOAD CORRECTLY!!!! Check the string:\n{game_string}")
+            print(
+                f"!!!!GAME DID NOT LOAD CORRECTLY!!!! Check the string:\n{game_string}"
+            )
         elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
         result = game.headers["Result"] if "Result" in game.headers else None
 
@@ -81,11 +83,11 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             with open(f"{output_filepath}_{os.getpid()}.txt", "a+") as f:
                 f.write(f"{header} {body}\n")
                 written += 1
-                #print(f"Worker proc: put game {game}")
+                # print(f"Worker proc: put game {game}")
         finally:
             pass
-            #write_lock.release()
-    #print(f"WP: no more to read after {written} games written.")
+            # write_lock.release()
+    # print(f"WP: no more to read after {written} games written.")
 
 
 if __name__ == "__main__":

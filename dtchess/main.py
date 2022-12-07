@@ -16,8 +16,14 @@ device = "cuda" if t.cuda.is_available() else "cpu"
 # TODO: add wandb tracking
 
 
-def train(tokeniser: GPT2Tokenizer, model: GPT2Model, optimiser: optim.Adam,
-          dataloaders: Tuple[DataLoader, DataLoader], loss_fn: nn.CrossEntropyLoss, args: dict):
+def train(
+    tokeniser: GPT2Tokenizer,
+    model: GPT2Model,
+    optimiser: optim.Adam,
+    dataloaders: Tuple[DataLoader, DataLoader],
+    loss_fn: nn.CrossEntropyLoss,
+    args: dict,
+):
     train_dl, test_dl = dataloaders
 
     # Writing a generic training loop for now, update later.

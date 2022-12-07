@@ -25,8 +25,15 @@ def parse_args() -> dict:
     return vars(argspace)
 
 
-def setup(args: dict) -> Tuple[
-    GPT2Tokenizer, GPT2Model, optim.Adam, Tuple[DataLoader, DataLoader], nn.CrossEntropyLoss]:
+def setup(
+    args: dict,
+) -> Tuple[
+    GPT2Tokenizer,
+    GPT2Model,
+    optim.Adam,
+    Tuple[DataLoader, DataLoader],
+    nn.CrossEntropyLoss,
+]:
     tokeniser, model = dt.models.create_model()
     optimiser = optim.Adam(model.parameters, lr=args["lr"])
     dataloaders = preprocess_data(tokeniser, args)
@@ -37,9 +44,9 @@ def setup(args: dict) -> Tuple[
 
 def process_game(game: pgn.Game, sequence_type: str) -> str:
     """Converts PGN data into sequences usable by our model, then wraps them in DataLoaders.
-       Allows the use of CLI args to switch between different modes of parsing the file:
-        - "[<ELO>|<RESULT>|<RETURN>] move1 move2 ..."
-        - "[<ELO>|<RESULT>|<RETURN>] board1 board2 ..."
+    Allows the use of CLI args to switch between different modes of parsing the file:
+     - "[<ELO>|<RESULT>|<RETURN>] move1 move2 ..."
+     - "[<ELO>|<RESULT>|<RETURN>] board1 board2 ..."
     """
     body, header = "", ""
     elo = game.headers["WhiteElo"]
@@ -88,17 +95,19 @@ def process_game(game: pgn.Game, sequence_type: str) -> str:
         body = f"{' '.join(boards)}"
     elif body_type == "evalmoves" and evals_present:
         # "[MOVE1] [EVAL1] [MOVE2] [EVAL2] ...".
-        moves_evals_sequence = ' '.join(list(zip(moves, evals)))
+        moves_evals_sequence = " ".join(list(zip(moves, evals)))
         body = f"{' '.join(moves_evals_sequence)}"
     elif sequence_type == "evalboards" and evals_present:
         # "[BOARD1] [EVAL1] [BOARD2] [EVAL2] ...".
-        boards_evals_sequence = ' '.join(list(zip(boards, evals)))
+        boards_evals_sequence = " ".join(list(zip(boards, evals)))
         body = f"{' '.join(boards_evals_sequence)}"
 
     return header + body
 
 
-def preprocess_data(tokeniser: GPT2Tokenizer, args: dict) -> Tuple[DataLoader, DataLoader]:
+def preprocess_data(
+    tokeniser: GPT2Tokenizer, args: dict
+) -> Tuple[DataLoader, DataLoader]:
     """Preprocesses data for the decision transformer."""
     # TODO: Add logic here to crawl all the files.
 
