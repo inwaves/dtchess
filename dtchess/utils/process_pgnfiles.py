@@ -129,7 +129,7 @@ if __name__ == "__main__":
     write_lock = mp.Lock()
     game_queue: Queue = Queue()
     reader_process = mp.Process(
-        target=read_games, args=(input_filepath, game_queue, written, errs)
+        target=read_games, args=(input_filepath, game_queue, written)
     )
     sequencing_processes = [
         mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
