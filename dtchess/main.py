@@ -27,7 +27,7 @@ def train(
     train_dl, test_dl = dataloaders
 
     # Writing a generic training loop for now, update later.
-    for epoch in range(args["num_epochs"]):
+    for _ in range(args["num_epochs"]):
         for X, y in enumerate(tqdm(train_dl)):
             X, y = X.to(device), y.to(device)
             preds = model(X)

@@ -1,17 +1,20 @@
-import chess.pgn as pgn
-import multiprocessing as mp
-from multiprocessing import Queue
-from threading import Lock
 import time
 import io
 import os
+import multiprocessing as mp
+import chess.pgn as pgn
+
+from multiprocessing import Queue
+from threading import Lock
+from utils import parse_args
 
 output_filepath = "./dtchess/data/sequences"
 NUM_CORES = mp.cpu_count()
 
 
-def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) -> None:
-    # Fetch one game for each process but this one, and put it to the shared queue.
+def read_games(input_filepath: str, game_queue: Queue, written: int) -> None:
+    # Fetch one game for each process but this one,
+    # and put it to the shared queue.
     start = time.time()
     with open(input_filepath, "r", encoding="utf-8") as pgnfile:
         # There are always newlines between games; but games also contain
@@ -33,22 +36,27 @@ def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) 
                 lines = []
                 newline_ctr = 0
 
-    print(f"RP {os.getpid()} took {time.time()-start:.4f}s to process {written} games.")
+    print(
+        f"RP {os.getpid()} took {time.time() - start:.4f}s to process {written} games."
+    )
 
 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games = 0
     total_elapsed: int = 0  # Total time taken to process games.
-    while game.qsize() > 0:
-        #print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
+    while game_queue.qsize() > 0:
+        # print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
         # This is a string representing a game.
         game_string = game_queue.get()
         try:
             game = pgn.read_game(io.StringIO(game_string))
         except ValueError:
-            print(
-                f"!!!!GAME DID NOT LOAD CORRECTLY!!!! Check the string:\n{game_string}"
-            )
+            print(f"Game didn't load correctly. Check the string:\n{game_string}")
+            continue
+
+        if game.headers["Termination"] == "Abandoned":
+            continue
+
         elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
         result = game.headers["Result"] if "Result" in game.headers else None
         start = time.time()
@@ -58,9 +66,10 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
         board = game.board()
         try:
             while game.next():
-                # We don't remember the initial board state, it's always the same.
                 move = game.variation(0).move
-                boards.append(board.fen())
+                boards.append(
+                    board.fen().split(" ")[0]
+                )  # Only want the piece positions.
                 board.push(move)
 
                 # Not all games have evals; if they do, record them.
@@ -96,16 +105,23 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             write_lock.release()
         total_elapsed += time.time() - start
 
-    print(f"WP {os.getpid()} processed {num_games} games, taking "
-          f"{total_elapsed/num_games:.4f}s on average.")
+    print(
+        f"WP {os.getpid()} processed {num_games} games, taking "
+        f"{total_elapsed / num_games:.4f}s on average."
+    )
 
 
 if __name__ == "__main__":
     print(f"{NUM_CORES=}")
     mp.set_start_method("fork")
-    input_filepath = "./standard_1703.pgn"
+
+    args = parse_args()
+
+    input_filepath = args["input_filepath"]
     output_filepath = f"./dtchess/data/sequences_{input_filepath.split('/')[-1][:-4]}"
-    print(output_filepath)
+    logfile = f"{output_filepath.split('/')[-1][:-4]}_log.txt"
+    print(f"Reading games from {input_filepath}")
+    print(f"Writing sequences to: {output_filepath}")
     written, errs = 0, 0
 
     # Spawn processes to read games from a PGN file and
@@ -116,8 +132,7 @@ if __name__ == "__main__":
         target=read_games, args=(input_filepath, game_queue, written, errs)
     )
     sequencing_processes = [
-        mp.Process(target=sequence_game,
-                   args=(output_filepath, write_lock, game_queue))
+        mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
         for _ in range(NUM_CORES - 1)
     ]
 
@@ -132,4 +147,5 @@ if __name__ == "__main__":
     for process in sequencing_processes:
         process.join()
 
-    print(f"Finished! Took {time.time() - start}s.")
+    with open(logfile, "a+", encoding="utf-8") as f:
+        f.write(f"Finished! Took {time.time() - start}s.")

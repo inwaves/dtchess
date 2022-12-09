@@ -1,10 +1,9 @@
 from argparse import ArgumentParser
-from typing import Tuple, Optional
+from typing import Tuple
 
 import chess.pgn as pgn
 import torch.nn as nn
 import torch.optim as optim
-from chess.pgn import ChildNode
 from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
 
@@ -18,9 +17,9 @@ def count_parameters(model: nn.Module) -> int:
 def parse_args() -> dict:
     parser = ArgumentParser()
 
-    # TODO: Use this pattern to control args...
-    # parser.add_argument()
-
+    parser.add_argument(
+        "--input_filepath", required=True, help="Path to the PGN input file."
+    )
     argspace = parser.parse_args()
     return vars(argspace)
 
@@ -69,9 +68,10 @@ def process_game(game: pgn.Game, sequence_type: str) -> str:
         game = game.next()
     # TODO: Assert that moves, evals and boards are the correct shape.
 
-    # A sequence comprises a header and a body.
-    # The header contains some combination of ELO, game result and total return tokens.
-    # The body is either a sequence of moves or boards, with or without the evals of these from a chess engine.
+    # A sequence comprises a header and a body. The header contains some
+    # combination of ELO, game result and total return tokens. The body
+    # is either a sequence of moves or boards, with or without the evals
+    # of these from a chess engine.
     header_type, body_type = sequence_type.split(":")
     evals_present = len(evals) > 0
     if header_type == "full" and evals_present:
@@ -113,9 +113,11 @@ def preprocess_data(
 
     pgn_file = open("./dtchess/data/sample.pgn")
     while game := pgn.read_game(pgn_file) is not None:
-        sequence = process_game(game, args["sequence_type"])
+        _ = process_game(game, args["sequence_type"])
 
+    train_ds, test_ds = None, None
     # TODO: How to stream this data?
     # TODO: Add logic here to tokenise the sequences.
-    # train_dl, test_dl = DataLoader(train_ds, batch_size=args["batch_size"]), DataLoader(test_ds, batch_size=args["batch_size"])
-    return None, None
+    train_dl = DataLoader(train_ds, batch_size=args["batch_size"])
+    test_dl = DataLoader(test_ds, batch_size=args["batch_size"])
+    return train_dl, test_dl

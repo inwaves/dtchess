@@ -1,4 +1,3 @@
-import random
 import pyspiel
 import numpy as np
 
