@@ -24,6 +24,10 @@ def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) 
                 newline_ctr += 1 if line == "\n" else 0
             else:
                 game = "".join(lines)
+
+                # Make sure there is room on the queue before putting.
+                while game_queue.full():
+                    time.sleep(0.001)
                 game_queue.put(game)
                 written += 1
                 lines = []
@@ -35,8 +39,8 @@ def read_games(input_filepath: str, game_queue: Queue, written: int, errs: int) 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games = 0
     total_elapsed: int = 0  # Total time taken to process games.
-    while not game_queue.empty():
-        print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
+    while game.qsize() > 0:
+        #print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
         # This is a string representing a game.
         game_string = game_queue.get()
         try:
@@ -99,7 +103,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
 if __name__ == "__main__":
     print(f"{NUM_CORES=}")
     mp.set_start_method("fork")
-    input_filepath = "../data/antichess1.pgn"
+    input_filepath = "./standard_1703.pgn"
     output_filepath = f"./dtchess/data/sequences_{input_filepath.split('/')[-1][:-4]}"
     print(output_filepath)
     written, errs = 0, 0
