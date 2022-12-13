@@ -1,5 +1,8 @@
+import time
+import os
+
 from argparse import ArgumentParser
-from typing import Tuple
+from typing import Any, Callable, Tuple, List
 
 import chess.pgn as pgn
 import torch.nn as nn
@@ -10,8 +13,30 @@ from transformers import GPT2Model, GPT2Tokenizer
 import dtchess as dt
 
 
+def time_decorator(logger):
+    def time_function(func) -> Callable[[Any, ...], Any]:
+        def wrap_function(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            end = time.time()
+            logger.info(
+                f"Function {getattr(func, '__name__', func)} running on process {os.getpid()} took {end-start:.4f}s."
+            )
+            return result
+
+        return wrap_function
+
+    return time_function
+
+
 def count_parameters(model: nn.Module) -> int:
     return sum(p.numel for p in model.parameters() if p.requires_grad)
+
+
+def extract_filename(filepath: str) -> str:
+    """Takes in a UNIX style filepath and returns the filename
+    without an extension."""
+    return filepath.split("/")[-1][:-4]
 
 
 def parse_args() -> dict:

@@ -1,60 +1,61 @@
 import time
 import io
 import os
+import sys
 import multiprocessing as mp
 import chess.pgn as pgn
+from loguru import logger
 
 from multiprocessing import Queue
 from threading import Lock
-from utils import parse_args
+from utils import parse_args, extract_filename, time_decorator
 
-output_filepath = "./dtchess/data/sequences"
 NUM_CORES = mp.cpu_count()
+LOGGING_HANDLERS = [
+    sys.stdout,
+]
+MAX_LOG_SIZE = "2 GB"
 
 
-def read_games(input_filepath: str, game_queue: Queue, written: int) -> None:
-    # Fetch one game for each process but this one,
-    # and put it to the shared queue.
-    start = time.time()
+@time_decorator(logger)
+def read_games(input_filepath: str, game_queue: Queue) -> None:
+    games_processed = 0
     with open(input_filepath, "r", encoding="utf-8") as pgnfile:
-        # There are always newlines between games; but games also contain
-        # a newline between the headers and the moves.
-        newline_ctr = 0
+        saw_newline = False
         lines = []
         for line in pgnfile:
-            if newline_ctr < 2:
+            if not saw_newline:
                 lines += [line]
-                newline_ctr += 1 if line == "\n" else 0
+                saw_newline = True if line == "\n" else 0
             else:
+                lines += [line]
                 game = "".join(lines)
 
                 # Make sure there is room on the queue before putting.
                 while game_queue.full():
                     time.sleep(0.001)
-                game_queue.put(game)
-                written += 1
-                lines = []
-                newline_ctr = 0
 
-    print(
-        f"RP {os.getpid()} took {time.time() - start:.4f}s to process {written} games."
-    )
+                # logger.info(f"RP {os.getpid()} just put game: {game}.")
+                game_queue.put(game)
+                games_processed += 1
+                lines = []
+                saw_newline = False
+
+    logger.info(f"RP {os.getpid()} finished! Processed {games_processed} games.")
 
 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games = 0
-    total_elapsed: int = 0  # Total time taken to process games.
+    total_elapsed: float = 0
     while game_queue.qsize() > 0:
-        # print(f"WP {os.getpid()} getting game; ~{game_queue.qsize()} left in queue.")
-        # This is a string representing a game.
         game_string = game_queue.get()
         try:
             game = pgn.read_game(io.StringIO(game_string))
         except ValueError:
-            print(f"Game didn't load correctly. Check the string:\n{game_string}")
+            logger.debug(f"Game didn't load correctly. Check the string:\n{game_string}")
             continue
 
-        if game.headers["Termination"] == "Abandoned":
+        if "Termination" in game.headers and game.headers["Termination"] == "Abandoned":
             continue
 
         elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
@@ -79,6 +80,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
                 # Follow the game tree until the end node.
                 game = game.next()
         except ValueError:
+            logger.debug("ValueError while parsing game. Skipping...")
             continue
 
         # Use the moves, evals and boards to generate a sequence.
@@ -96,46 +98,47 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
         # Append sequence to file.
         write_lock.acquire()
         try:
-            with open(f"{output_filepath}.txt", "a+") as f:
+            with open(output_filepath, "a+") as f:
                 f.write(f"{header} {body}\n")
                 num_games += 1
-                # print(f"Worker proc: put game {game}")
+                logger.info(f"WP {os.getpid()}: put game {game}. {game_queue.qsize()} left in the queue.")
         finally:
-            pass
             write_lock.release()
         total_elapsed += time.time() - start
 
-    print(
+    logger.info(
         f"WP {os.getpid()} processed {num_games} games, taking "
         f"{total_elapsed / num_games:.4f}s on average."
     )
 
 
-if __name__ == "__main__":
-    print(f"{NUM_CORES=}")
+def setup():
+    logger.info(f"{NUM_CORES=}")
     mp.set_start_method("fork")
 
     args = parse_args()
 
     input_filepath = args["input_filepath"]
-    output_filepath = f"./dtchess/data/sequences_{input_filepath.split('/')[-1][:-4]}"
-    logfile = f"{output_filepath.split('/')[-1][:-4]}_log.txt"
-    print(f"Reading games from {input_filepath}")
-    print(f"Writing sequences to: {output_filepath}")
-    written, errs = 0, 0
+    output_filepath = f"./dtchess/data/sequences_{extract_filename(input_filepath)}.txt"
+    logfile = f"./dtchess/logs/sequences_{extract_filename(input_filepath)}.log"
+    logger.add(sys.stderr, format="{time} {message}", enqueue=True)
+    logger.add(logfile, format="{time} {message}", enqueue=True, rotation=MAX_LOG_SIZE, retention=1)
+    logger.info(f"Reading from {input_filepath}.\n Writing to: {output_filepath}")
 
     # Spawn processes to read games from a PGN file and
     # convert them to string sequences.
     write_lock = mp.Lock()
     game_queue: Queue = Queue()
-    reader_process = mp.Process(
-        target=read_games, args=(input_filepath, game_queue, written)
-    )
+    reader_process = mp.Process(target=read_games, args=(input_filepath, game_queue))
     sequencing_processes = [
         mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
         for _ in range(NUM_CORES - 1)
     ]
+    return reader_process, sequencing_processes
 
+
+if __name__ == "__main__":
+    reader_process, sequencing_processes = setup()
     start = time.time()
     # Start all processes.
     reader_process.start()
@@ -147,5 +150,4 @@ if __name__ == "__main__":
     for process in sequencing_processes:
         process.join()
 
-    with open(logfile, "a+", encoding="utf-8") as f:
-        f.write(f"Finished! Took {time.time() - start}s.")
+    logger.info("Finished! Took {time.time() - start}s.")
