@@ -12,7 +12,7 @@ from utils import parse_args, extract_filename, time_decorator
 
 NUM_CORES = mp.cpu_count()
 MAX_LOG_SIZE = "2 GB"
-MAX_ITEMS_IN_QUEUE = 1000
+MAX_ITEMS_IN_QUEUE = 10000
 
 @time_decorator(logger)
 def read_games(input_filepath: str, game_queue: Queue) -> None:
