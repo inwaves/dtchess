@@ -50,7 +50,7 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
     game_queue.close()
     logger.info(f"RP {os.getpid()} finished! Processed {games_processed} games.")
 
-
+@timer(logger)
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games: int = 0
     total_elapsed: float = 0
@@ -114,7 +114,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
                 logger.info(
                     f"[WP {os.getpid()}] Put game number {num_games}."
                     f" {game_queue.qsize()} left in the queue."
-                    f" {count_python_processes()} processes are running."
+                #    f" {count_python_processes()} processes are running."
                 )
         finally:
             write_lock.release()
@@ -138,13 +138,14 @@ def setup():
 
     # Configure logger.
     logfile = f"./dtchess/logs/sequences_{input_filename}.log"
-    logger.add(sys.stderr, format="{time} {message}", enqueue=True)
+    logger.add(sys.stderr, format="{time} {message}", enqueue=True, level="DEBUG")
     logger.add(
         logfile,
         format="{time} {message}",
         enqueue=True,
         rotation=MAX_LOG_SIZE,
         retention=1,
+        level="INFO"
     )
     logger.info(f"Reading from {input_filepath}.\n Writing to: {output_filepath}")
 
@@ -165,7 +166,6 @@ if __name__ == "__main__":
     start = time.time()
     # Start all processes.
     reader_process.start()
-    time.sleep(2)
     for process in sequencing_processes:
         process.start()
 
