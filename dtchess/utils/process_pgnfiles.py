@@ -1,6 +1,7 @@
 import time
 import io
 import os
+import queue
 import sys
 import multiprocessing as mp
 import chess.pgn as pgn  # type: ignore
@@ -31,17 +32,21 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
                 game = "".join(lines)
 
                 # Make sure there is room in the queue before putting.
-                while game_queue.full():
+                try:
+                    logger.info(f"[RP {os.getpid()}] Put game number {games_processed}.")
+                    game_queue.put(game)
+                    games_processed += 1
+                except queue.Full:
                     logger.debug(f"Game queue full! Its size is: {game_queue.qsize()}")
                     time.sleep(0.001)
+                finally:
+                    lines = []
+                    saw_newline = False
 
-                logger.info(f"[RP {os.getpid()}] Put game number {games_processed}.")
-                game_queue.put(game)
-                games_processed += 1
-                lines = []
-                saw_newline = False
-
-    # Flush all buffered data to pipe.
+    # Finished writing all games from the input file.
+    # Flag the end & flush all buffered data to pipe.
+    for _ in range(NUM_CORES - 1):
+        game_queue.put("DONE")
     game_queue.close()
     logger.info(f"RP {os.getpid()} finished! Processed {games_processed} games.")
 
@@ -49,8 +54,9 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games: int = 0
     total_elapsed: float = 0
-    while not game_queue.empty():
-        game_string: str = game_queue.get()
+    game_string: str = ""
+    while game_string != "DONE":
+        game_string = game_queue.get()
         try:
             game: pgn.GameNode = pgn.read_game(io.StringIO(game_string))
         except ValueError:
@@ -146,11 +152,9 @@ def setup():
     # and all the others to convert them to string sequences.
     write_lock = mp.Lock()
     game_queue = Queue()
-    reader_process = mp.Process(target=read_games,
-                                args=(input_filepath, game_queue))
+    reader_process = mp.Process(target=read_games, args=(input_filepath, game_queue))
     sequencing_processes = [
-        mp.Process(target=sequence_game,
-                   args=(output_filepath, write_lock, game_queue))
+        mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
         for _ in range(NUM_CORES - 1)
     ]
     return reader_process, sequencing_processes, game_queue
@@ -169,4 +173,6 @@ if __name__ == "__main__":
     for process in sequencing_processes:
         process.join()
 
-logger.info(f"Finished! Took {time.time() - start}s. Queue size at finish: {game_queue.qsize()}, .full= {game_queue.full()}, .empty={game_queue.empty()}")
+    logger.info(
+        f"Finished! Took {time.time() - start}s. Queue size at finish: {game_queue.qsize()}, .full= {game_queue.full()}, .empty={game_queue.empty()}"
+    )
