@@ -29,7 +29,7 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
                 game = "".join(lines)
 
                 # Make sure there is room on the queue before putting.
-                while game_queue.qsize() > MAX_ITEMS_IN_QUEUE:
+                while game_queue.full():
                     logger.debug(f"Game queue full! Its size is: {game_queue.qsize()}")
                     time.sleep(0.001)
 
@@ -45,7 +45,7 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games = 0
     total_elapsed: float = 0
-    while game_queue.qsize() > 0:
+    while not game_queue.empty():
         game_string = game_queue.get()
         try:
             game = pgn.read_game(io.StringIO(game_string))
@@ -99,7 +99,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             with open(output_filepath, "a+") as f:
                 f.write(f"{header} {body}\n")
                 num_games += 1
-                logger.info(f"WP {os.getpid()}: put game {num_games}. {game_queue.qsize()} left in the queue.")
+                logger.info(f"WP {os.getpid()}: put game number {num_games}. {game_queue.qsize()} left in the queue.")
         finally:
             write_lock.release()
         total_elapsed += time.time() - start
