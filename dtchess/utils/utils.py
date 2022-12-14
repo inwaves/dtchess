@@ -16,7 +16,7 @@ import dtchess as dt
 
 def count_python_processes() -> int:
     cmd = "top -l 1" if "macOS" in platform.platform() else "top -bn1"
-    cmd += "| grep python | wc -l"
+    cmd = f"{cmd} | grep python | wc -l"
     return int(os.popen(cmd, "r").read())
 
 
