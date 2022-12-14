@@ -3,66 +3,72 @@ import io
 import os
 import sys
 import multiprocessing as mp
-import chess.pgn as pgn
-from loguru import logger
+import chess.pgn as pgn  # type: ignore
+from loguru import logger  # type: ignore
 
 from multiprocessing import Queue
 from threading import Lock
-from utils import parse_args, extract_filename, time_decorator
+from typing import List
+from utils import parse_args, extract_filename, timer  # type: ignore
 
 NUM_CORES = mp.cpu_count()
 MAX_LOG_SIZE = "2 GB"
 MAX_ITEMS_IN_QUEUE = 10000
 
-@time_decorator(logger)
+
+@timer(logger)
 def read_games(input_filepath: str, game_queue: Queue) -> None:
-    games_processed = 0
+    games_processed: int = 0
     with open(input_filepath, "r", encoding="utf-8") as pgnfile:
-        saw_newline = False
-        lines = []
+        saw_newline: bool = False
+        lines: List[str] = []
         for line in pgnfile:
             if not saw_newline:
                 lines += [line]
-                saw_newline = True if line == "\n" else 0
+                saw_newline = True if line == "\n" else False
             else:
                 lines += [line]
                 game = "".join(lines)
 
-                # Make sure there is room on the queue before putting.
+                # Make sure there is room in the queue before putting.
                 while game_queue.full():
                     logger.debug(f"Game queue full! Its size is: {game_queue.qsize()}")
                     time.sleep(0.001)
 
-                # logger.info(f"RP {os.getpid()} just put game: {game}.")
+                logger.info(f"RP {os.getpid()} just put game number: {games_processed}.")
                 game_queue.put(game)
                 games_processed += 1
                 lines = []
                 saw_newline = False
 
+    # Flush all buffered data to pipe.
+    game_queue.close()
     logger.info(f"RP {os.getpid()} finished! Processed {games_processed} games.")
 
 
 def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
-    num_games = 0
+    num_games: int = 0
     total_elapsed: float = 0
     while not game_queue.empty():
-        game_string = game_queue.get()
+        game_string: str = game_queue.get()
         try:
-            game = pgn.read_game(io.StringIO(game_string))
+            game: pgn.GameNode = pgn.read_game(io.StringIO(game_string))
         except ValueError:
-            logger.debug(f"Game didn't load correctly. Check the string:\n{game_string}")
+            logger.debug(
+                f"Game didn't load correctly. Check the string:\n{game_string}"
+            )
             continue
 
         if "Termination" in game.headers and game.headers["Termination"] == "Abandoned":
             continue
 
-        elo = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
-        result = game.headers["Result"] if "Result" in game.headers else None
+        elo: str = game.headers["WhiteElo"] if "WhiteElo" in game.headers else None
+        result: str = game.headers["Result"] if "Result" in game.headers else None
         start = time.time()
 
         # Parse the GameNode object into moves, evals and boards.
         evals, boards = [], []
-        board = game.board()
+        board: pgn.Board = game.board()
         try:
             while game.next():
                 move = game.variation(0).move
@@ -99,7 +105,10 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
             with open(output_filepath, "a+") as f:
                 f.write(f"{header} {body}\n")
                 num_games += 1
-                logger.info(f"WP {os.getpid()}: put game number {num_games}. {game_queue.qsize()} left in the queue.")
+                logger.info(
+                    f"WP {os.getpid()}: put game number {num_games}"
+                    f"{game_queue.qsize()} left in the queue."
+                )
         finally:
             write_lock.release()
         total_elapsed += time.time() - start
@@ -117,26 +126,37 @@ def setup():
     args = parse_args()
 
     input_filepath = args["input_filepath"]
-    output_filepath = f"./dtchess/data/sequences_{extract_filename(input_filepath)}.txt"
-    logfile = f"./dtchess/logs/sequences_{extract_filename(input_filepath)}.log"
+    input_filename = extract_filename(input_filepath)
+    output_filepath = f"./dtchess/data/sequences_{input_filename}.txt"
+
+    # Configure logger.
+    logfile = f"./dtchess/logs/sequences_{input_filename}.log"
     logger.add(sys.stderr, format="{time} {message}", enqueue=True)
-    logger.add(logfile, format="{time} {message}", enqueue=True, rotation=MAX_LOG_SIZE, retention=1)
+    logger.add(
+        logfile,
+        format="{time} {message}",
+        enqueue=True,
+        rotation=MAX_LOG_SIZE,
+        retention=1,
+    )
     logger.info(f"Reading from {input_filepath}.\n Writing to: {output_filepath}")
 
-    # Spawn processes to read games from a PGN file and
-    # convert them to string sequences.
+    # Spawn processes: one to read games from a PGN file
+    # and all the others to convert them to string sequences.
     write_lock = mp.Lock()
-    game_queue: Queue = Queue()
-    reader_process = mp.Process(target=read_games, args=(input_filepath, game_queue))
+    game_queue = Queue()
+    reader_process = mp.Process(target=read_games,
+                                args=(input_filepath, game_queue))
     sequencing_processes = [
-        mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
+        mp.Process(target=sequence_game,
+                   args=(output_filepath, write_lock, game_queue))
         for _ in range(NUM_CORES - 1)
     ]
-    return reader_process, sequencing_processes
+    return reader_process, sequencing_processes, game_queue
 
 
 if __name__ == "__main__":
-    reader_process, sequencing_processes = setup()
+    reader_process, sequencing_processes, game_queue = setup()
     start = time.time()
     # Start all processes.
     reader_process.start()
@@ -148,4 +168,4 @@ if __name__ == "__main__":
     for process in sequencing_processes:
         process.join()
 
-    logger.info("Finished! Took {time.time() - start}s.")
+logger.info(f"Finished! Took {time.time() - start}s. Queue size at finish: {game_queue.qsize()}, .full= {game_queue.full()}, .empty={game_queue.empty()}")

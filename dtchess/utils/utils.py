@@ -2,7 +2,7 @@ import time
 import os
 
 from argparse import ArgumentParser
-from typing import Any, Callable, Tuple, List
+from typing import Any, Callable, Tuple
 
 import chess.pgn as pgn
 import torch.nn as nn
@@ -13,7 +13,7 @@ from transformers import GPT2Model, GPT2Tokenizer
 import dtchess as dt
 
 
-def time_decorator(logger):
+def timer(logger):
     def time_function(func) -> Callable[[Any, ...], Any]:
         def wrap_function(*args, **kwargs):
             start = time.time()
