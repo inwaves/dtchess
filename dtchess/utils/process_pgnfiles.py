@@ -35,7 +35,7 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
                     logger.debug(f"Game queue full! Its size is: {game_queue.qsize()}")
                     time.sleep(0.001)
 
-                logger.info(f"RP {os.getpid()} just put game number: {games_processed}.")
+                logger.info(f"[RP {os.getpid()}] Put game number {games_processed}.")
                 game_queue.put(game)
                 games_processed += 1
                 lines = []
@@ -106,7 +106,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
                 f.write(f"{header} {body}\n")
                 num_games += 1
                 logger.info(
-                    f"WP {os.getpid()}: put game number {num_games}."
+                    f"[WP {os.getpid()}] Put game number {num_games}."
                     f" {game_queue.qsize()} left in the queue."
                 )
         finally:
@@ -114,7 +114,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
         total_elapsed += time.time() - start
 
     logger.info(
-        f"WP {os.getpid()} processed {num_games} games, taking "
+        f"[WP {os.getpid()}] Processed {num_games} games, taking "
         f"{total_elapsed / num_games:.4f}s on average."
     )
 
