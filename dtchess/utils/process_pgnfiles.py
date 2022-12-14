@@ -106,8 +106,8 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
                 f.write(f"{header} {body}\n")
                 num_games += 1
                 logger.info(
-                    f"WP {os.getpid()}: put game number {num_games}"
-                    f"{game_queue.qsize()} left in the queue."
+                    f"WP {os.getpid()}: put game number {num_games}."
+                    f" {game_queue.qsize()} left in the queue."
                 )
         finally:
             write_lock.release()
