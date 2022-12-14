@@ -1,5 +1,6 @@
 import time
 import os
+import platform
 
 from argparse import ArgumentParser
 from typing import Any, Callable, Tuple
@@ -11,6 +12,12 @@ from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
 
 import dtchess as dt
+
+
+def count_python_processes() -> int:
+    cmd = "top -l 1" if "macOS" in platform.platform() else "top -bn1"
+    cmd += "| grep python | wc -l"
+    return int(os.popen(cmd, "r").read())
 
 
 def timer(logger):

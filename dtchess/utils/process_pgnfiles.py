@@ -9,7 +9,7 @@ from loguru import logger  # type: ignore
 from multiprocessing import Queue
 from threading import Lock
 from typing import List
-from utils import parse_args, extract_filename, timer  # type: ignore
+from utils import count_python_processes, extract_filename, parse_args, timer  # type: ignore
 
 NUM_CORES = mp.cpu_count()
 MAX_LOG_SIZE = "2 GB"
@@ -108,6 +108,7 @@ def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> 
                 logger.info(
                     f"[WP {os.getpid()}] Put game number {num_games}."
                     f" {game_queue.qsize()} left in the queue."
+                    f" {count_python_processes()} processes are running."
                 )
         finally:
             write_lock.release()
