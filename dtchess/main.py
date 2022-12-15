@@ -6,8 +6,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import GPT2Model, GPT2Tokenizer
-
-from dtchess.utils.utils import parse_args, setup
+from dtchess.models.decision_transformer import create_model
+from dtchess.utils.utils import parse_args, training_setup
 
 MAIN = __name__ == "__main__"
 device = "cuda" if t.cuda.is_available() else "cpu"
@@ -42,5 +42,6 @@ def train(
 
 if MAIN:
     args = parse_args()
-    tokeniser, model, optimiser, dataloaders, loss_fn = setup(args)
-    trained_model = train(tokeniser, model, optimiser, dataloaders, loss_fn, args)
+    # tokeniser, model, optimiser, dataloaders, loss_fn = training_setup(args)
+    # trained_model = train(tokeniser, model, optimiser, dataloaders, loss_fn, args)
+    tokeniser, model = create_model()

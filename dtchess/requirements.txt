@@ -36,3 +36,4 @@ transformers==4.25.1
 typing_extensions==4.4.0
 urllib3==1.26.13
 virtualenv==20.17.1
+pytest

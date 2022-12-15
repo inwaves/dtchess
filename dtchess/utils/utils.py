@@ -60,7 +60,7 @@ def parse_args() -> dict:
     return vars(argspace)
 
 
-def setup(
+def training_setup(
     args: dict,
 ) -> Tuple[
     GPT2Tokenizer,
@@ -145,14 +145,8 @@ def preprocess_data(
     tokeniser: GPT2Tokenizer, args: dict
 ) -> Tuple[DataLoader, DataLoader]:
     """Preprocesses data for the decision transformer."""
-    # TODO: Add logic here to crawl all the files.
 
-    pgn_file = open("./dtchess/data/sample.pgn")
-    while game := pgn.read_game(pgn_file) is not None:
-        _ = process_game(game, args["sequence_type"])
 
-    train_ds, test_ds = None, None
-    # TODO: How to stream this data?
     # TODO: Add logic here to tokenise the sequences.
     train_dl = DataLoader(train_ds, batch_size=args["batch_size"])
     test_dl = DataLoader(test_ds, batch_size=args["batch_size"])
