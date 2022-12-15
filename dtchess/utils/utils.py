@@ -49,8 +49,12 @@ def extract_filename(filepath: str) -> str:
 def parse_args() -> dict:
     parser = ArgumentParser()
 
+    parser.add_argument("--input_filepath", help="Path to the PGN input file.")
     parser.add_argument(
-        "--input_filepath", required=True, help="Path to the PGN input file."
+        "--num_random_games",
+        type=int,
+        help="number of random games to generate",
+        default=10000,
     )
     argspace = parser.parse_args()
     return vars(argspace)

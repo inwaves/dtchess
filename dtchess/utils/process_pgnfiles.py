@@ -136,6 +136,8 @@ def setup():
     args = parse_args()
 
     input_filepath = args["input_filepath"]
+    if input_filepath is None:
+        raise ValueError("Must provide a valid input file!")
     input_filename = extract_filename(input_filepath)
     output_filepath = f"./dtchess/data/sequences_{input_filename}.txt"
 
