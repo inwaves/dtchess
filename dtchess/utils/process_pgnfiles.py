@@ -17,8 +17,6 @@ MAX_LOG_SIZE = "2 GB"
 MAX_ITEMS_IN_QUEUE = 10000
 
 
-# FIXME: I don't think the logger has handlers
-# defined when this decorator wraps the function.
 @timer(logger)
 def read_games(input_filepath: str, game_queue: Queue) -> None:
     games_processed: int = 0

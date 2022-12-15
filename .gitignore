@@ -1,5 +1,6 @@
 .idea*
 **/ci/
+**/data/
 **/__pycache__/
 dtchess.egg-info/
 *.pgn
