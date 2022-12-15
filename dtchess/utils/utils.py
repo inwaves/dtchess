@@ -4,7 +4,7 @@ import platform
 
 from argparse import ArgumentParser
 from typing import Any, Callable, Tuple
-
+import chess
 import chess.pgn as pgn
 import torch.nn as nn
 import torch.optim as optim
@@ -153,3 +153,7 @@ def preprocess_data(
     train_dl = DataLoader(train_ds, batch_size=args["batch_size"])
     test_dl = DataLoader(test_ds, batch_size=args["batch_size"])
     return train_dl, test_dl
+
+
+def board_to_sequence(board: chess.Board) -> str:
+    return board.fen().split(" ")[0]
