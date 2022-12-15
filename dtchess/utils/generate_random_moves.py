@@ -1,11 +1,29 @@
+import os
+import sys
 import random
+import multiprocessing as mp
 import chess    # type: ignore
 from typing import List, Tuple
 from utils import board_to_sequence, timer
 from loguru import logger
 
+NUM_CORES = mp.cpu_count()
+NUM_GAMES = 10
 
-@timer(logger)
+
+def simulate_games(n: int, output_filepath: str, write_lock: mp.Lock) -> None:
+    for i in range(n):
+        game_seq, round_ct = one_game()
+        write_lock.acquire()
+        try:
+            with open(output_filepath, "a+", encoding="utf-8") as f:
+                f.write(game_seq)
+                f.write("\n")
+        finally:
+            write_lock.release()
+        logger.info(f"WP {os.getpid()} wrote game {i}.")
+
+
 def one_game() -> Tuple[str, int]:
     board_sequences: List[str] = []
     board = chess.Board()
@@ -27,7 +45,21 @@ def one_round(board: chess.Board) -> None:
 
 
 if __name__ == "__main__":
-    logger.add("./logs/random_moves.log", format="{time} {message}", enqueue=True)
-    num_games: int = 5
-    games = [one_game() for _ in range(num_games)]
-    print(games[1])
+    mp.set_start_method("fork")
+    logpath = "./logs/random_moves.log"
+    logger.add(sys.stderr, format="{time} {message}", enqueue=True, level="DEBUG")
+    logger.add(logpath, format="{time} {message}", enqueue=True, retention=1, level="INFO")
+    logger.info(f"Writing to {logpath}.")
+    output_filepath = "./data/random_games.txt"
+    write_lock = mp.Lock()
+    workers = [mp.Process(target=simulate_games,
+                          args=(NUM_GAMES, output_filepath, write_lock)) for _ in range(NUM_CORES)]
+
+    for i, worker in enumerate(workers):
+        print(f"Starting worker {i}")
+        worker.start()
+
+    for worker in workers:
+        worker.join()
+
+    logger.info("Finished!")
