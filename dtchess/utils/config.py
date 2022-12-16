@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,13 +14,13 @@ class TrainingConfig:
     num_workers: int = 0
 
 
-@dataclass
-class ModelConfig:
-    model_type: str = "gpt2-medium"
+def generate_config(yaml_file: str) -> TrainingConfig:
 
+    # If the file doesn't exist, return default config.
+    if not os.path.exists(yaml_file):
+        return TrainingConfig()
 
-# TODO: parse ModelConfig from the same file?
-def config_from_file(yaml_file: str) -> Any:
+    # Otherwise parse the file.
     kwargs: dict[str, Any] = {}
     with open(yaml_file, "r", encoding="utf-8") as f:
         for line in f:
@@ -37,6 +38,4 @@ def config_from_file(yaml_file: str) -> Any:
                 kwargs[k] = (float(b1_str[1:]), float(b2_str[:-1]))
     if "training" in yaml_file.lower():
         return TrainingConfig(**kwargs)
-    elif "model" in yaml_file.lower():
-        return ModelConfig(**kwargs)
     raise ValueError("File not recognised!")

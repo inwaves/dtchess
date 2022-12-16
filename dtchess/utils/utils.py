@@ -9,9 +9,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
-
-import dtchess as dt
 from dtchess.utils.config import TrainingConfig
+from dtchess.models.gpt import create_model
 
 
 def count_python_processes() -> int:
@@ -69,17 +68,17 @@ def training_setup(
     Tuple[DataLoader, DataLoader],
     nn.CrossEntropyLoss,
 ]:
-    tokeniser, model = dt.models.gpt.create_model()
-    optimiser = optim.Adam(model.parameters, lr=config.learning_rate)
-    dataloaders = preprocess_data(tokeniser, config)
+    tokeniser, model = create_model()
+    optimiser = optim.Adam(model.parameters(), lr=config.learning_rate)
+    train_dataloader = preprocess_data(tokeniser, config)
     loss_fn = nn.CrossEntropyLoss
 
-    return tokeniser, model, optimiser, dataloaders, loss_fn
+    return tokeniser, model, optimiser, train_dataloader, loss_fn
 
 
 def preprocess_data(
     tokeniser: GPT2Tokenizer, config: TrainingConfig
-) -> Tuple[DataLoader, DataLoader]:
+) -> DataLoader:
     """Preprocesses data for the decision transformer."""
 
     # TODO: What needs to happen here:
@@ -87,12 +86,16 @@ def preprocess_data(
     #   - data is encoded into input_ids
     #   - data is loaded into a dataloader and batched
     #   - the dataloader manages parallelism
+    input_sequences: list[str] = []
+    with open(input_filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            if line != "\n":
+                input_sequences += [line]
 
-    # input_ids = tokeniser.encode(input_sequences)
-    # train_dl = DataLoader(train_ds, batch_size=config.batch_size)
-    # test_dl = DataLoader(test_ds, batch_size=config.batch_size)
-    # return train_dl, test_dl
-    return None, None
+    input_ids = tokeniser.encode(input_sequences)
+    train_ds = TensorDataset(input_ids)
+    train_dl = DataLoader(train_ds, batch_size=config.batch_size)
+    return train_dl
 
 
 def board_to_sequence(board: chess.Board) -> str:
