@@ -6,8 +6,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import GPT2Model, GPT2Tokenizer
-from dtchess.models.decision_transformer import create_model
-from dtchess.utils.utils import parse_args, training_setup
+from dtchess.models.gpt import create_model
+from dtchess.utils.utils import training_setup
+from dtchess.utils.config import config_from_file, TrainingConfig, ModelConfig
 
 MAIN = __name__ == "__main__"
 device = "cuda" if t.cuda.is_available() else "cpu"
@@ -22,16 +23,19 @@ def train(
     optimiser: optim.Adam,
     dataloaders: Tuple[DataLoader, DataLoader],
     loss_fn: nn.CrossEntropyLoss,
-    args: dict,
+    config: TrainingConfig,
 ):
     train_dl, test_dl = dataloaders
 
     # Writing a generic training loop for now, update later.
-    for _ in range(args["num_epochs"]):
-        for X, y in enumerate(tqdm(train_dl)):
-            X, y = X.to(device), y.to(device)
-            preds = model(X)
-            loss = loss_fn(preds, y)
+    for _ in range(config.num_epochs):
+        for (input_ids, _) in enumerate(tqdm(train_dl)):
+            input_ids = input_ids.to(device)
+
+            # TODO: implement causal masking
+            model_inputs = None
+            preds = model(model_inputs)
+            loss = loss_fn(preds, input_ids)
 
             optimiser.zero_grad()
             loss.backward()
@@ -41,7 +45,8 @@ def train(
 
 
 if MAIN:
-    args = parse_args()
-    # tokeniser, model, optimiser, dataloaders, loss_fn = training_setup(args)
-    # trained_model = train(tokeniser, model, optimiser, dataloaders, loss_fn, args)
-    tokeniser, model = create_model()
+    train_config: TrainingConfig = config_from_file("./dtchess/config.yaml")
+    model_config: ModelConfig = config_from_file("./dtchess/model_config.yaml")
+    tokeniser, model, optimiser, dataloaders, loss_fn = training_setup(train_config)
+    # trained_model = train(tokeniser, model, optimiser, dataloaders, loss_fn, train_config)
+    tokeniser, model = create_model(model_config)

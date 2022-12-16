@@ -3,14 +3,16 @@ import sys
 import random
 import multiprocessing as mp
 import chess  # type: ignore
+import threading
 from typing import List, Tuple
 from utils import board_to_sequence, parse_args
 from loguru import logger
 
+
 NUM_CORES = mp.cpu_count()
 
 
-def simulate_games(n: int, output_filepath: str, write_lock: mp.Lock) -> None:
+def simulate_games(n: int, output_filepath: str, write_lock: threading.Lock) -> None:
     for i in range(n):
         game_seq, round_ct = one_game()
         write_lock.acquire()
