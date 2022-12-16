@@ -45,9 +45,7 @@ def one_round(board: chess.Board) -> None:
     board.push(random.choice(lm))
 
 
-def setup() -> list[mp.Process]:
-    cl_args = parse_args()
-
+def setup(cl_args: dict) -> list[mp.Process]:
     mp.set_start_method("fork")
     logpath = "./logs/random_moves.log"
     logger.add(sys.stderr, format="{time} {message}", enqueue=True, level="DEBUG")
@@ -68,7 +66,8 @@ def setup() -> list[mp.Process]:
 
 
 if __name__ == "__main__":
-    workers = setup()
+    cl_args = parse_args()
+    workers = setup(cl_args)
 
     for i, worker in enumerate(workers):
         print(f"Starting worker {i}")
@@ -77,4 +76,4 @@ if __name__ == "__main__":
     for worker in workers:
         worker.join()
 
-    logger.info("Finished!")
+    logger.info(f"Finished generating {cl_args['num_random_games']} games.")
