@@ -1,6 +1,7 @@
 import time
 import os
 import platform
+import xml.etree.ElementTree as ET
 
 from argparse import ArgumentParser
 from typing import Any, Callable, Tuple
@@ -11,6 +12,13 @@ from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
 from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
+
+
+def extract_tag(input_string: str, tag_name: str) -> str:
+    if tag_name not in input_string:
+        raise ValueError("Tag not present in input string!")
+
+    return ET.fromstring(input_string).text
 
 
 def count_python_processes() -> int:

@@ -10,11 +10,50 @@ from loguru import logger  # type: ignore
 from multiprocessing import Queue
 from threading import Lock
 from typing import List
-from utils import extract_filename, parse_args, timer  # type: ignore
+from utils import extract_filename, parse_args, timer, extract_tag  # type: ignore
 
 NUM_CORES = mp.cpu_count()
 MAX_LOG_SIZE = "2 GB"
 MAX_ITEMS_IN_QUEUE = 10000
+
+def extract_distributions(filepath: str) -> None:
+    elo_total, return_total = 0, 0
+    failures = 0
+    result_bincount = {"white_win": 0, "black_win": 0, "tie": 0}
+    logger.info(f"Calculating average of ELOs and returns, counting results...")
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            # If present, extract ELO.
+            try:
+                elo_string = extract_tag(line, "ELO")
+                elo_total += int(elo_string)
+                elo_count += 1
+            except ValueError:
+                failures += 1
+
+            # If present, extract returns.
+            return_total += int(result_string)
+            return_count += 1
+
+            # If present, count the result outcomes.
+            if result_string == "1/2-1/2":
+                result_bincount["tie"] += 1
+            elif result_string == "1-0":
+                result_bincount["white_win"] += 1
+            else:
+                result_bincount["black_win"] += 1
+
+        elo_mean = elo_total // elo_count
+        return_mean = return_total // return_count
+        logger.info("Done with average. Calculating deviations...")
+        for line in f:
+            pass
+        logger.info("Done with deviations...")
+
+    logger.info(f"{elo_mean=}, variance: {elo_variance=}")
+    logger.info(f"{return_mean=}, variance: {return_variance=}")
+    logger.info(f"{result_bincount=}")
+
 
 
 @timer(logger)
