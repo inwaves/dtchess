@@ -68,7 +68,7 @@ def parse_args() -> dict:
 
 
 def training_setup(
-    config: TrainingConfig
+    config: TrainingConfig,
 ) -> Tuple[
     GPT2Tokenizer,
     GPT2Model,
@@ -84,9 +84,7 @@ def training_setup(
     return tokeniser, model, optimiser, train_dataloader, loss_fn
 
 
-def preprocess_data(
-    tokeniser: GPT2Tokenizer, config: TrainingConfig
-) -> DataLoader:
+def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoader:
     """Preprocesses data for the decision transformer."""
 
     # TODO: What needs to happen here:

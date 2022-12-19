@@ -1,5 +1,5 @@
-import torch as t   # type: ignore
-from transformers import GPT2Tokenizer, GPT2Model   # type: ignore
+import torch as t  # type: ignore
+from transformers import GPT2Tokenizer, GPT2Model  # type: ignore
 
 
 def create_model(model_type: str = "gpt2-medium") -> tuple[GPT2Model, GPT2Tokenizer]:

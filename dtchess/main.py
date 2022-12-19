@@ -41,6 +41,8 @@ def train(
 
 if MAIN:
     train_config: TrainingConfig = generate_config("./dtchess/config.yaml")
-    tokeniser, model, optimiser, train_dataloader, loss_fn = training_setup(train_config)
+    tokeniser, model, optimiser, train_dataloader, loss_fn = training_setup(
+        train_config
+    )
     print(tokeniser, model)
     # trained_model = train(tokeniser, model, optimiser, train_dataloaders, loss_fn, train_config)
