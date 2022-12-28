@@ -38,3 +38,4 @@ urllib3==1.26.13
 virtualenv==20.17.1
 pytest
 wandb
+datasets

@@ -92,7 +92,7 @@ def setup():
 
 
 if __name__ == "__main__":
-    filenames = [f"../data/dtchess-standard/train/train_{i}" for i in range(1, 8)]
+    filenames = [f"../data/dtchess-standard/train/train_{i}.txt" for i in range(1, 8)]
     setup()
     logger.info("Setup done!")
     extract_distributions(filenames)
