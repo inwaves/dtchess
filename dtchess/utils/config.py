@@ -2,6 +2,10 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
+INT_FIELDS = ("max_epochs", "batch_size", "num_workers", "checkpoint_every_n")
+FLOAT_FIELDS = ("learning_rate", "weight_decay")
+TUPLE_FIELDS = "betas"
+
 
 @dataclass
 class TrainingConfig:
@@ -27,15 +31,15 @@ def generate_config(yaml_file: str) -> TrainingConfig:
             k, v = line.split(":")
             k = k.strip()
             v = v.strip("\n").strip()
-            if k in ("max_epochs", "batch_size", "num_workers"):
+            if k in INT_FIELDS:
                 kwargs[k] = int(v)
-            elif k in ("learning_rate", "weight_decay"):
+            elif k in FLOAT_FIELDS:
                 kwargs[k] = float(v)
             elif k == "betas":
-                b1_str, b2_str = v.split(", ")
-                b1_str = b1_str.strip()
-                b2_str = b2_str.strip()
-                kwargs[k] = (float(b1_str[1:]), float(b2_str[:-1]))
+                fst_el, snd_el = v.split(", ")
+                fst_el = fst_el.strip()
+                snd_el = snd_el.strip()
+                kwargs[k] = (float(fst_el[1:]), float(snd_el[:-1]))
     if "training" in yaml_file.lower():
         return TrainingConfig(**kwargs)
     raise ValueError("File not recognised!")

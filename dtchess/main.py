@@ -6,6 +6,8 @@ from tqdm import tqdm
 from transformers import GPT2Model, GPT2Tokenizer
 from dtchess.utils.utils import training_setup
 from dtchess.utils.config import generate_config, TrainingConfig
+import wandb
+
 
 MAIN = __name__ == "__main__"
 device = "cuda" if t.cuda.is_available() else "cpu"
@@ -22,8 +24,11 @@ def train(
     loss_fn: nn.CrossEntropyLoss,
     config: TrainingConfig,
 ):
-    # Writing a generic training loop for now, update later.
-    for _ in range(config.num_epochs):
+    wandb.init(config)
+    wandb.watch(model, log_freq=config.log_every_n)
+
+    model.train()
+    for current_epoch in range(config.num_epochs):
         for (input_ids, _) in enumerate(tqdm(train_dataloader)):
             input_ids = input_ids.to(device)
 
@@ -36,6 +41,15 @@ def train(
             loss.backward()
             optimiser.step()
 
+            if current_epoch % config.log_every_n == 0:
+                wandb.log({"loss": loss})
+
+        if current_epoch % config.checkpoint_every_n == 0:
+            model_path = f"./models/gpt2-{wandb.run.id}.pt"
+            t.save(model_path)
+            model_artifact = wandb.Artifact(f"gpt2-{wandb.run.id}", type="model")
+            model_artifact.add_file(model_path, f"gpt2-{wandb.run.id}.pt")
+            wandb.log_artifact(model_artifact)
     return model
 
 
