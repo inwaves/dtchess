@@ -17,6 +17,7 @@ from dtchess.models.gpt import create_model
 def extract_tag(input_string: str, tag_name: str) -> str:
     if tag_name not in input_string:
         raise ValueError("Tag not present in input string!")
+    input_string = f"<root>{input_string}</root>"
 
     return ET.fromstring(input_string).find(tag_name)
 
