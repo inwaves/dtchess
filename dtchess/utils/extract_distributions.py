@@ -21,8 +21,9 @@ def extract_distributions(filepaths: list[str]) -> None:
                     elo_string = extract_tag(line, "ELO")
                     elo_total += int(elo_string)
                     elo_count += 1
-                except ValueError:
+                except Exception:
                     failures["elo"] += 1
+                    logger.debug(f"Failed on line: {line}")
 
                 # If present, extract returns.
                 try:
