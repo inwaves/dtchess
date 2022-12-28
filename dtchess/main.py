@@ -13,9 +13,6 @@ MAIN = __name__ == "__main__"
 device = "cuda" if t.cuda.is_available() else "cpu"
 
 
-# TODO: add wandb tracking
-
-
 def train(
     tokeniser: GPT2Tokenizer,
     model: GPT2Model,
@@ -59,4 +56,6 @@ if MAIN:
         train_config
     )
     print(tokeniser, model)
-    # trained_model = train(tokeniser, model, optimiser, train_dataloaders, loss_fn, train_config)
+    trained_model = train(
+        tokeniser, model, optimiser, train_dataloader, loss_fn, train_config
+    )

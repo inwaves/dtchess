@@ -59,7 +59,7 @@ def extract_distributions(filepaths: list[str]) -> None:
                 # Calculate ELO deviations.
                 try:
                     elo_string = extract_tag(line, "ELO")
-                    sum_elo_deviations += int(elo_string) - elo_mean
+                    sum_elo_deviations += (int(elo_string) - elo_mean)**2
                 except ValueError:
                     failures["elo"] += 1
 

@@ -5,27 +5,47 @@ import multiprocessing as mp
 import chess  # type: ignore
 import threading
 from typing import List, Tuple
-from utils import board_to_sequence, parse_args
+from dtchess.utils.utils import board_to_sequence, parse_args
 from loguru import logger
 
 
 NUM_CORES = mp.cpu_count()
+
+# Summary statistics for the distribution of ELO, returns
+# and results from real chess games. These are mimicked when
+# generating the random games so that it isn't immediately obvious
+# that the values are made up.
+SUM_STATS = {
+    "elo_mean": 1658,
+    "elo_variance": 0.56303,
+    "return_mean": 560,
+    "return_variance": 0.17377,
+    "white_win": 50530229,
+    "black_win": 47251633,
+    "tie": 4032083,
+}
+RESULTS = ["1-0", "0-1", "1/2-1/2"]
 
 
 def simulate_games(n: int, output_filepath: str, write_lock: threading.Lock) -> None:
     for i in range(n):
         game_seq, round_ct = one_game()
         write_lock.acquire()
-        try:
+        with write_lock:
             with open(output_filepath, "a+", encoding="utf-8") as f:
                 f.write(game_seq)
                 f.write("\n")
-        finally:
-            write_lock.release()
         logger.info(f"WP {os.getpid()} wrote game {i}.")
 
 
 def one_game() -> Tuple[str, int]:
+    elo = int(random.gauss(mu=SUM_STATS["elo_mean"], sigma=SUM_STATS["elo_variance"]))
+    ret = int(random.gauss(mu=SUM_STATS["return_mean"], sigma=SUM_STATS["return_variance"]))
+    result = random.choices(
+        RESULTS, [SUM_STATS["white_win"], SUM_STATS["black_win"], SUM_STATS["tie"]]
+    )[0]
+    header = f"<ELO>{elo}</ELO><RET>{ret}</RET><RES>{result}</RES>"
+
     board_sequences: List[str] = []
     board = chess.Board()
     round_ct: int = 0
@@ -34,7 +54,9 @@ def one_game() -> Tuple[str, int]:
         board_sequences += [board_to_sequence(board)]
         round_ct += 1
 
-    game_sequence: str = "||".join(board_sequences)
+    body: str = "||".join(board_sequences)
+    game_sequence: str = f"{header} {body}"
+
     return game_sequence, round_ct
 
 
