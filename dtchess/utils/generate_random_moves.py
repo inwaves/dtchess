@@ -17,7 +17,7 @@ NUM_CORES = mp.cpu_count()
 # that the values are made up.
 SUM_STATS = {
     "elo_mean": 1658,
-    "elo_variance": 0.56303,
+    "elo_variance": 375.6826,
     "return_mean": 560,
     "return_variance": 0.17377,
     "white_win": 50530229,
