@@ -19,7 +19,7 @@ SUM_STATS = {
     "elo_mean": 1658,
     "elo_variance": 375.6826,
     "return_mean": 560,
-    "return_variance": 0.17377,
+    "return_variance": ,
     "white_win": 50530229,
     "black_win": 47251633,
     "tie": 4032083,

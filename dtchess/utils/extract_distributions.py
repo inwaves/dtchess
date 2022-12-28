@@ -46,7 +46,7 @@ def extract_distributions(filepaths: list[str]) -> None:
         #                     failures["result"] += 1
         logger.info(f"Finished processing average for file {filepath}")
 
-    elo_mean = elo_total // elo_count
+    # elo_mean = elo_total // elo_count
     return_mean = return_total // return_count
     logger.info(f"{failures=}")
     failures = {"elo": 0, "return": 0}  # Reset to count deviation errors.
