@@ -18,7 +18,7 @@ def extract_tag(input_string: str, tag_name: str) -> str:
     if tag_name not in input_string:
         raise ValueError("Tag not present in input string!")
 
-    return ET.fromstring(input_string).text
+    return ET.fromstring(input_string).find(tag_name)
 
 
 def count_python_processes() -> int:
