@@ -18,6 +18,6 @@ def prep():
         ),
         batched=True,
     )
-    train_dl = DataLoader(input_ids, batch_size=config.batch_size)
+    train_dl = DataLoader(input_ids, batch_size=32)
 
     return train_dl, tokeniser, model
