@@ -7,7 +7,7 @@ device = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def prep():
-    tokeniser, model = create_model("gpt2")
+    tokeniser, model = create_model("gpt2-medium")
     dataset = datasets.load_dataset(
         "inwaves/dtchess-standard", streaming=True, split="train"
     )
