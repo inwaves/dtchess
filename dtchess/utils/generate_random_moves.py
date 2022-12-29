@@ -30,7 +30,6 @@ RESULTS = ["1-0", "0-1", "1/2-1/2"]
 def simulate_games(n: int, output_filepath: str, write_lock: threading.Lock) -> None:
     for i in range(n):
         game_seq, round_ct = one_game()
-        write_lock.acquire()
         with write_lock:
             with open(output_filepath, "a+", encoding="utf-8") as f:
                 f.write(game_seq)
