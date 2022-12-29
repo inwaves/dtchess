@@ -31,15 +31,19 @@ def generate_config(yaml_file: str) -> TrainingConfig:
             k, v = line.split(":")
             k = k.strip()
             v = v.strip("\n").strip()
+
+            # Parse integers, floats and tuple args.
             if k in INT_FIELDS:
                 kwargs[k] = int(v)
             elif k in FLOAT_FIELDS:
                 kwargs[k] = float(v)
-            elif k == "betas":
+            elif k in TUPLE_FIELDS:
                 fst_el, snd_el = v.split(", ")
                 fst_el = fst_el.strip()
                 snd_el = snd_el.strip()
                 kwargs[k] = (float(fst_el[1:]), float(snd_el[:-1]))
+            else:  # String fields are not parsed.
+                kwargs[k] = v
     if "training" in yaml_file.lower():
         return TrainingConfig(**kwargs)
     raise ValueError("File not recognised!")

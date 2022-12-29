@@ -31,7 +31,10 @@ def train(
 
             # TODO: implement causal masking
             model_inputs = None
-            preds = model(model_inputs)
+
+            # FIXME: is this correct? .last_hidden_state?
+            # I want this to output token IDs, not hidden activations.
+            preds = model(model_inputs).last_hidden_state
             loss = loss_fn(preds, input_ids)
 
             optimiser.zero_grad()
