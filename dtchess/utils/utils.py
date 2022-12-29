@@ -6,9 +6,10 @@ import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from typing import Any, Callable, Tuple
 import chess
+import datasets
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 from transformers import GPT2Model, GPT2Tokenizer
 from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
@@ -93,15 +94,15 @@ def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoa
     #   - data is encoded into input_ids
     #   - data is loaded into a dataloader and batched
     #   - the dataloader manages parallelism
-    input_sequences: list[str] = []
-    with open(input_filepath, "r", encoding="utf-8") as f:
-        for line in f:
-            if line != "\n":
-                input_sequences += [line]
+    dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
+    tokeniser.add_special_tokens({"pad_token": "[PAD]"})
 
-    input_ids = tokeniser.encode(input_sequences)
-    train_ds = TensorDataset(input_ids)
-    train_dl = DataLoader(train_ds, batch_size=config.batch_size)
+    input_ids = dataset.map(lambda seq: tokeniser(seq["text"],
+                                                  padding="max_length",
+                                                  max_length=1024,
+                                                  truncation=True),
+                            batched=True)
+    train_dl = DataLoader(input_ids, batch_size=config.batch_size)
     return train_dl
 
 
