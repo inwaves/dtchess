@@ -39,7 +39,9 @@ def simulate_games(n: int, output_filepath: str, write_lock: threading.Lock) -> 
 
 def one_game() -> Tuple[str, int]:
     elo = int(random.gauss(mu=SUM_STATS["elo_mean"], sigma=SUM_STATS["elo_variance"]))
-    ret = int(random.gauss(mu=SUM_STATS["return_mean"], sigma=SUM_STATS["return_variance"]))
+    ret = int(
+        random.gauss(mu=SUM_STATS["return_mean"], sigma=SUM_STATS["return_variance"])
+    )
     result = random.choices(
         RESULTS, [SUM_STATS["white_win"], SUM_STATS["black_win"], SUM_STATS["tie"]]
     )[0]

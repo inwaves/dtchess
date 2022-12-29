@@ -90,16 +90,18 @@ def training_setup(
 def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoader:
     """Preprocesses data for the model."""
 
-    dataset = datasets.load_dataset(config.dataset,
-                                    streaming=True,
-                                    split="train")
+    dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
 
-    input_ids = dataset.map(lambda seq: tokeniser(seq["text"],
-                                                  padding="max_length",
-                                                  max_length=1024,
-                                                  truncation=True,
-                                                  return_tensors="pt"),
-                            batched=True)
+    input_ids = dataset.map(
+        lambda seq: tokeniser(
+            seq["text"],
+            padding="max_length",
+            max_length=1024,
+            truncation=True,
+            return_tensors="pt",
+        ),
+        batched=True,
+    )
     train_dl = DataLoader(input_ids, batch_size=config.batch_size)
     return train_dl
 

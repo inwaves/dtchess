@@ -1,5 +1,5 @@
 import torch as t  # type: ignore
-import torch.nn as nn   # type: ignore
+import torch.nn as nn  # type: ignore
 from transformers import GPT2Tokenizer, GPT2Model  # type: ignore
 
 
