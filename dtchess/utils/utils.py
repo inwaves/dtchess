@@ -9,7 +9,7 @@ import chess
 import datasets
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
 from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
@@ -36,7 +36,8 @@ def timer(logger):
             result = func(*args, **kwargs)
             end = time.time()
             logger.info(
-                f"Function {getattr(func, '__name__', func)} running on process {os.getpid()} took {end-start:.4f}s."
+                f"Function {getattr(func, '__name__', func)} running on "
+                f"process {os.getpid()} took {end-start:.4f}s."
             )
             return result
 
@@ -46,7 +47,7 @@ def timer(logger):
 
 
 def count_parameters(model: nn.Module) -> int:
-    return sum(p.numel for p in model.parameters() if p.requires_grad)
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def extract_filename(filepath: str) -> str:
@@ -87,15 +88,11 @@ def training_setup(
 
 
 def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoader:
-    """Preprocesses data for the decision transformer."""
+    """Preprocesses data for the model."""
 
-    # TODO: What needs to happen here:
-    #   - data is loaded from the input file
-    #   - data is encoded into input_ids
-    #   - data is loaded into a dataloader and batched
-    #   - the dataloader manages parallelism
-    dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
-    tokeniser.add_special_tokens({"pad_token": "[PAD]"})
+    dataset = datasets.load_dataset(config.dataset,
+                                    streaming=True,
+                                    split="train")
 
     input_ids = dataset.map(lambda seq: tokeniser(seq["text"],
                                                   padding="max_length",
