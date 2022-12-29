@@ -101,13 +101,13 @@ def training_setup(
 ]:
     tokeniser, model = create_model()
     optimiser = optim.Adam(model.parameters(), lr=config.learning_rate)
-    train_dataloader = preprocess_data(tokeniser, config)
-    loss_fn = nn.CrossEntropyLoss
+    train_dataloader = preprocess_data(tokeniser, model, config)
+    loss_fn = nn.CrossEntropyLoss()
 
     return tokeniser, model, optimiser, train_dataloader, loss_fn
 
 
-def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoader:
+def preprocess_data(tokeniser: GPT2Tokenizer, model: GPT2LMHeadModel, config: TrainingConfig) -> DataLoader:
     """Preprocesses data for the model."""
 
     dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
@@ -116,7 +116,7 @@ def preprocess_data(tokeniser: GPT2Tokenizer, config: TrainingConfig) -> DataLoa
         lambda seq: tokeniser(
             seq["text"],
             padding="max_length",
-            max_length=1024,
+            max_length=model.transformer.wpe.num_embeddings,
             truncation=True,
             return_tensors="pt",
         ),

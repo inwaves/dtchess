@@ -16,7 +16,7 @@ def prep():
         lambda seq: tokeniser(
             seq["text"],
             padding="max_length",
-            max_length=model.wpe.num_embeddings,
+            max_length=model.transformer.wpe.num_embeddings,
             truncation=True,
             return_tensors="pt",
         ),
