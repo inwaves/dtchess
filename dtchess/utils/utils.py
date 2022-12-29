@@ -24,10 +24,10 @@ def cuda_stats() -> str:
     stats: list[str] = []
     for i in range(num_devices):
         current_stat = (
-            f"Device: t.cuda.get_device_name(i)\n"
-            f"Reserved/allocated/total (GB): {t.cuda.memory_reserved(i)/to_gb}"
-            f"/{t.cuda.memory_allocated(i)/to_gb}"
-            f"/{t.cuda.get_device_properties(i).total_memory/to_gb}"
+            f"Device: {t.cuda.get_device_name(i)}\n"
+            f"Reserved/allocated/total (GB): {t.cuda.memory_reserved(i)/to_gb:.2f}"
+            f"/{t.cuda.memory_allocated(i)/to_gb:.2f}"
+            f"/{t.cuda.get_device_properties(i).total_memory/to_gb:.2f}\n"
             "########"
         )
         stats += [current_stat]
