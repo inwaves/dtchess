@@ -11,7 +11,8 @@ def create_model(model_type: str = "gpt2-medium") -> tuple[GPT2LMHeadModel, GPT2
     model = GPT2LMHeadModel.from_pretrained(model_type)
 
     # Modifying token embedding since we added a new token type...
-    model.wte = nn.Embedding(tokeniser.vocab_size + 1, model.wte.embedding_dim)
+    model.transformer.wte = nn.Embedding(tokeniser.vocab_size + 1, model.wte.embedding_dim)
+    model.lm_head = nn.Linear(model.lm_head.in_features, tokeniser.vocab_size + 1, bias=False)
     model = model.to(device)
 
     return tokeniser, model
