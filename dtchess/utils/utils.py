@@ -2,7 +2,7 @@ import time
 import os
 import platform
 import xml.etree.ElementTree as ET
-
+import torch as t
 from argparse import ArgumentParser
 from typing import Any, Callable, Tuple
 import chess
@@ -13,6 +13,26 @@ from torch.utils.data import DataLoader
 from transformers import GPT2Model, GPT2Tokenizer
 from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
+
+
+def cuda_stats() -> str:
+    if not t.cuda.is_available():
+        return "No CUDA detected!"
+
+    num_devices = t.cuda.device_count()
+    to_gb = 1024**3
+    stats: list[str] = []
+    for i in range(num_devices):
+        current_stat = (
+            f"Device: t.cuda.get_device_name(i)\n"
+            f"Reserved/allocated/total (GB): {t.cuda.memory_reserved(i)/to_gb}"
+            f"/{t.cuda.memory_allocated(i)/to_gb}"
+            f"/{t.cuda.get_device_properties(i).total_memory/to_gb}"
+            "########"
+        )
+        stats += [current_stat]
+
+    return "\n".join(stats)
 
 
 def extract_tag(input_string: str, tag_name: str) -> str:

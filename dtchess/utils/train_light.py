@@ -4,9 +4,13 @@ from torch.utils.data import DataLoader
 from dtchess.models.gpt import create_model
 
 device = "cuda" if t.cuda.is_available() else "cpu"
+
+
 def prep():
     tokeniser, model = create_model("gpt2")
-    dataset = datasets.load_dataset("inwaves/dtchess-standard", streaming=True, split="train")
+    dataset = datasets.load_dataset(
+        "inwaves/dtchess-standard", streaming=True, split="train"
+    )
 
     input_ids = dataset.map(
         lambda seq: tokeniser(
