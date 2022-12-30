@@ -40,4 +40,4 @@ def one_fwd_pass(train_dl, tokeniser, model):
 
 
 if __name__ == "__main__":
-    one_fwd_pass(prep())
+    one_fwd_pass(*prep())
