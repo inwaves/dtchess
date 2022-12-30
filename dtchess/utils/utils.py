@@ -127,7 +127,6 @@ def preprocess_data(
         batched=True,
     )
     train_dl = DataLoader(input_ids, batch_size=config.batch_size)
-    print(f"Created dataloader with batch size: {config.batch_size}")
     return train_dl
 
 
