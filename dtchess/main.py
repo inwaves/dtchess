@@ -30,10 +30,8 @@ def train(
             input_ids = tokenised_sequences["input_ids"].squeeze().to(device)
 
             # TODO: implement causal masking
-            model_inputs = None
+            model_inputs = input_ids
 
-            # FIXME: is this correct? .last_hidden_state?
-            # I want this to output token IDs, not hidden activations.
             preds = model(model_inputs).logits
             loss = loss_fn(preds, input_ids)
 
