@@ -2,7 +2,8 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-INT_FIELDS = ("max_epochs", "batch_size", "num_workers", "checkpoint_every_n")
+INT_FIELDS = ("batch_size", "checkpoint_every_n",
+              "max_epochs", "num_epochs", "num_workers")
 FLOAT_FIELDS = ("learning_rate", "weight_decay")
 TUPLE_FIELDS = "betas"
 
