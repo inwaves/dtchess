@@ -38,10 +38,10 @@ def train(
             optimiser.step()
 
             if i % config.checkpoint_every_n == 0:
-                model_path = f"./models/gpt2-{wandb.run.id}.pt"
+                model_path = f"{config.ckpt_path}/gpt2-{wandb.run.id}.pt"
                 t.save(model, model_path)
                 model_artifact = wandb.Artifact(f"gpt2-{wandb.run.id}", type="model")
-                model_artifact.add_file(model_path, f"gpt2-{wandb.run.id}.pt")
+                model_artifact.add_file(model_path)
                 wandb.log_artifact(model_artifact)
     return model
 
