@@ -48,4 +48,5 @@ def generate_config(yaml_file: str) -> TrainingConfig:
             else:  # String fields are not parsed.
                 print(v)
                 kwargs[k] = v
+    breakpoint()
     return TrainingConfig(**kwargs)
