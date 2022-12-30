@@ -57,7 +57,7 @@ if MAIN:
     tokeniser, model, optimiser, train_dataloader, loss_fn = training_setup(
         train_config
     )
-    print(tokeniser, model)
+    print(train_config)
     trained_model = train(
         tokeniser, model, optimiser, train_dataloader, loss_fn, train_config
     )
