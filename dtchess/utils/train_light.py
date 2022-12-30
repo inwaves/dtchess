@@ -34,7 +34,7 @@ def one_fwd_pass(train_dl, tokeniser, model):
     logits = model(one_batch).logits
     print(f"CUDA stats after fwd pass: {cuda_stats()}")
 
-    del outputs
+    del logits
     t.cuda.empty_cache()
     print(f"CUDA stats after deleting outputs: {cuda_stats()}")
 
