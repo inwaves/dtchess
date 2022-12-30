@@ -39,7 +39,7 @@ def train(
 
             if i % config.checkpoint_every_n == 0:
                 model_path = f"./models/gpt2-{wandb.run.id}.pt"
-                t.save(model_path)
+                t.save(model, model_path)
                 model_artifact = wandb.Artifact(f"gpt2-{wandb.run.id}", type="model")
                 model_artifact.add_file(model_path, f"gpt2-{wandb.run.id}.pt")
                 wandb.log_artifact(model_artifact)
