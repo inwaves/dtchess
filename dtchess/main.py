@@ -34,8 +34,8 @@ def train(
             # TODO: implement causal masking
             model_inputs = input_ids
 
-            preds = model(model_inputs).logits
-            loss = loss_fn(preds, input_ids)
+            preds = model(model_inputs, labels=model_inputs)
+            loss = preds.loss
 
             optimiser.zero_grad()
             loss.backward()
