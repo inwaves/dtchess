@@ -34,7 +34,7 @@ def train(
 
             # FIXME: is this correct? .last_hidden_state?
             # I want this to output token IDs, not hidden activations.
-            preds = model(model_inputs).last_hidden_state
+            preds = model(model_inputs).logits
             loss = loss_fn(preds, input_ids)
 
             optimiser.zero_grad()
