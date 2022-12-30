@@ -1,6 +1,6 @@
 import torch as t  # type: ignore
 import torch.nn as nn  # type: ignore
-from transformers import GPT2Tokenizer, GPT2LMHeadModel  # type: ignore
+from transformers import AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel  # type: ignore
 
 
 def create_model(
@@ -11,7 +11,8 @@ def create_model(
     device = "cuda" if t.cuda.is_available() else "cpu"
     tokeniser = GPT2Tokenizer.from_pretrained(model_type)
     tokeniser.add_special_tokens({"pad_token": "[PAD]"})
-    model = GPT2LMHeadModel.from_pretrained(model_type)
+    # model = GPT2LMHeadModel.from_pretrained(model_type)
+    model = AutoModelForCausalLM.from_pretrained(model_type)
 
     # Modifying token embedding since we added a new token type...
     model.transformer.wte = nn.Embedding(
