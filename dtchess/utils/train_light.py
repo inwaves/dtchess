@@ -2,6 +2,7 @@ import torch as t
 import datasets
 from torch.utils.data import DataLoader
 from dtchess.models.gpt import create_model
+from dtchess.utils.utile import cuda_stats
 
 device = "cuda" if t.cuda.is_available() else "cpu"
 
@@ -25,3 +26,13 @@ def prep():
     train_dl = DataLoader(input_ids, batch_size=32)
 
     return train_dl, tokeniser, model
+
+def one_fwd_pass(train_dl, tokeniser, model):
+    print(f"CUDA stats before fwd pass: {cuda_stats()}")
+    one_batch = next(iter(train_dl))["input_ids"].squeeze().to(device)
+    outputs = model(one_batch)
+    print(f"CUDA stats after fwd pass: {cuda_stats()}")
+
+if __name__ == "__main__":
+    train_dl, tokeniser, model = prep()
+    one_fwd_pass(train_dl, tokeniser, model)
