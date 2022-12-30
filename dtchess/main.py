@@ -1,3 +1,4 @@
+import dataclasses
 import torch as t
 import torch.optim as optim
 import torch.nn as nn
@@ -21,7 +22,7 @@ def train(
     loss_fn: nn.CrossEntropyLoss,
     config: TrainingConfig,
 ):
-    wandb.init(vars(config))
+    wandb.init(dataclasses.asdict(config))
     wandb.watch(model, log_freq=config.log_every_n)
 
     model.train()
