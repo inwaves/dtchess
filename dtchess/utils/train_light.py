@@ -2,7 +2,7 @@ import torch as t
 import datasets
 from torch.utils.data import DataLoader
 from dtchess.models.gpt import create_model
-from dtchess.utils.utile import cuda_stats
+from dtchess.utils.utils import cuda_stats
 
 device = "cuda" if t.cuda.is_available() else "cpu"
 
