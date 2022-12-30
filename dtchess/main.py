@@ -27,7 +27,7 @@ def train(
 
     model.train()
     for current_epoch in range(config.num_epochs):
-        for (tokenised_sequences, _) in enumerate(tqdm(train_dataloader)):
+        for (_i, tokenised_sequences) in enumerate(tqdm(train_dataloader)):
             input_ids = tokenised_sequences["input_ids"].squeeze().to(device)
 
             # TODO: implement causal masking
