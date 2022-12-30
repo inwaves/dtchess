@@ -47,6 +47,4 @@ def generate_config(yaml_file: str) -> TrainingConfig:
                 kwargs[k] = (float(fst_el[1:]), float(snd_el[:-1]))
             else:  # String fields are not parsed.
                 kwargs[k] = v
-    if "training" in yaml_file.lower():
-        return TrainingConfig(**kwargs)
-    raise ValueError("File not recognised!")
+    return TrainingConfig(**kwargs)
