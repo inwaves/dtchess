@@ -46,7 +46,5 @@ def generate_config(yaml_file: str) -> TrainingConfig:
                 snd_el = snd_el.strip()
                 kwargs[k] = (float(fst_el[1:]), float(snd_el[:-1]))
             else:  # String fields are not parsed.
-                print(v)
                 kwargs[k] = v
-    breakpoint()
     return TrainingConfig(**kwargs)
