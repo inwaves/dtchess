@@ -24,6 +24,7 @@ def train(
 ):
     wandb.init(project="dtchess", config=dataclasses.asdict(config))
     wandb.watch(model, log_freq=config.log_every_n)
+    print(config.batch_size)
 
     model.train()
     for current_epoch in range(config.num_epochs):
