@@ -13,7 +13,7 @@ class TrainingConfig:
     betas: tuple[float, float] = (0.9, 0.95)
     checkpoint_every_n: int = 1000
     ckpt_path: str = ""
-    dataset = "inwaves/dtchess-standard"
+    dataset: str = "inwaves/dtchess-standard"
     learning_rate: float = 1e-4
     log_every_n: int = 100
     num_epochs: int = 10
