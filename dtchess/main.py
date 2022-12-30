@@ -21,7 +21,7 @@ def train(
     loss_fn: nn.CrossEntropyLoss,
     config: TrainingConfig,
 ):
-    wandb.init(config)
+    wandb.init(vars(config))
     wandb.watch(model, log_freq=config.log_every_n)
 
     model.train()
