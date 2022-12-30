@@ -22,7 +22,7 @@ def train(
     loss_fn: nn.CrossEntropyLoss,
     config: TrainingConfig,
 ):
-    wandb.init(dataclasses.asdict(config))
+    wandb.init(project="dtchess", config=dataclasses.asdict(config))
     wandb.watch(model, log_freq=config.log_every_n)
 
     model.train()
