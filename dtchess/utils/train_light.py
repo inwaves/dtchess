@@ -27,12 +27,17 @@ def prep():
 
     return train_dl, tokeniser, model
 
+
 def one_fwd_pass(train_dl, tokeniser, model):
     print(f"CUDA stats before fwd pass: {cuda_stats()}")
     one_batch = next(iter(train_dl))["input_ids"].squeeze().to(device)
     outputs = model(one_batch)
     print(f"CUDA stats after fwd pass: {cuda_stats()}")
 
+    del outputs
+    t.cuda.empty_cache()
+    print(f"CUDA stats after deleting outputs: {cuda_stats()}")
+
+
 if __name__ == "__main__":
-    train_dl, tokeniser, model = prep()
-    one_fwd_pass(train_dl, tokeniser, model)
+    one_fwd_pass(prep())

@@ -107,7 +107,9 @@ def training_setup(
     return tokeniser, model, optimiser, train_dataloader, loss_fn
 
 
-def preprocess_data(tokeniser: GPT2Tokenizer, model: GPT2LMHeadModel, config: TrainingConfig) -> DataLoader:
+def preprocess_data(
+    tokeniser: GPT2Tokenizer, model: GPT2LMHeadModel, config: TrainingConfig
+) -> DataLoader:
     """Preprocesses data for the model."""
 
     dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
