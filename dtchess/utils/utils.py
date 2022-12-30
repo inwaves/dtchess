@@ -21,7 +21,7 @@ def cuda_stats() -> str:
 
     num_devices = t.cuda.device_count()
     to_gb = 1024**3
-    stats: list[str] = ["#######\n"]
+    stats: list[str] = ["\n#######\n"]
     for i in range(num_devices):
         current_stat = (
             f"Device: {t.cuda.get_device_name(i)}\n"
