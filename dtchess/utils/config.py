@@ -9,7 +9,7 @@ TUPLE_FIELDS = "betas"
 
 @dataclass
 class TrainingConfig:
-    batch_size: int = 64
+    batch_size: int = 8
     betas: tuple[float, float] = (0.9, 0.95)
     checkpoint_every_n: int = 1000
     ckpt_path: str = ""
