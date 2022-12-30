@@ -26,8 +26,8 @@ def train(
     wandb.watch(model, log_freq=config.log_every_n)
 
     model.train()
-    for current_epoch in range(config.num_epochs):
-        for (_i, tokenised_sequences) in enumerate(tqdm(train_dataloader)):
+    for _ in range(config.num_epochs):  # Probably only one epoch.
+        for (i, tokenised_sequences) in enumerate(tqdm(train_dataloader)):
             input_ids = tokenised_sequences["input_ids"].squeeze().to(device)
 
             # TODO: implement causal masking
@@ -43,10 +43,10 @@ def train(
             del preds
             t.cuda.empty_cache()
 
-            if current_epoch % config.log_every_n == 0:
+            if i % config.log_every_n == 0:
                 wandb.log({"loss": loss})
 
-        if current_epoch % config.checkpoint_every_n == 0:
+        if i % config.checkpoint_every_n == 0:
             model_path = f"./models/gpt2-{wandb.run.id}.pt"
             t.save(model_path)
             model_artifact = wandb.Artifact(f"gpt2-{wandb.run.id}", type="model")
