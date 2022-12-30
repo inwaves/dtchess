@@ -94,7 +94,7 @@ def training_setup(
     config: TrainingConfig,
 ) -> Tuple[
     GPT2Tokenizer,
-    GPT2Model,
+    GPT2LMHeadModel,
     optim.Adam,
     Tuple[DataLoader, DataLoader],
     nn.CrossEntropyLoss,
