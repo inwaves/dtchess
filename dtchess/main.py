@@ -40,6 +40,9 @@ def train(
             loss.backward()
             optimiser.step()
 
+            del preds
+            t.cuda.empty_cache()
+
             if current_epoch % config.log_every_n == 0:
                 wandb.log({"loss": loss})
 
