@@ -9,13 +9,16 @@ TUPLE_FIELDS = "betas"
 
 @dataclass
 class TrainingConfig:
-    num_epochs: int = 10
     batch_size: int = 64
-    learning_rate: float = 1e-4
     betas: tuple[float, float] = (0.9, 0.95)
-    weight_decay: float = 0.1
+    checkpoint_every_n: int = 1000
     ckpt_path: str = ""
+    dataset = "inwaves/dtchess-standard"
+    learning_rate: float = 1e-4
+    log_every_n: int = 100
+    num_epochs: int = 10
     num_workers: int = 0
+    weight_decay: float = 0.1
 
 
 def generate_config(yaml_file: str) -> TrainingConfig:

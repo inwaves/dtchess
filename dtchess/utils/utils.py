@@ -21,7 +21,7 @@ def cuda_stats() -> str:
 
     num_devices = t.cuda.device_count()
     to_gb = 1024**3
-    stats: list[str] = []
+    stats: list[str] = ["#######\n"]
     for i in range(num_devices):
         current_stat = (
             f"Device: {t.cuda.get_device_name(i)}\n"
@@ -35,12 +35,14 @@ def cuda_stats() -> str:
     return "\n".join(stats)
 
 
-def extract_tag(input_string: str, tag_name: str) -> str:
+def extract_tag(input_string: str, tag_name: str) -> str | None:
     if tag_name not in input_string:
         raise ValueError("Tag not present in input string!")
     input_string = f"<root>{input_string}</root>"
 
-    return ET.fromstring(input_string).find(tag_name).text
+    element = ET.fromstring(input_string).find(tag_name)
+
+    return element.text if element is not None else element
 
 
 def count_python_processes() -> int:
@@ -99,7 +101,7 @@ def training_setup(
     Tuple[DataLoader, DataLoader],
     nn.CrossEntropyLoss,
 ]:
-    tokeniser, model = create_model()
+    model, tokeniser = create_model()
     optimiser = optim.Adam(model.parameters(), lr=config.learning_rate)
     train_dataloader = preprocess_data(tokeniser, model, config)
     loss_fn = nn.CrossEntropyLoss()
