@@ -10,7 +10,7 @@ import datasets
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from transformers import GPT2Model, GPT2Tokenizer
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
 
