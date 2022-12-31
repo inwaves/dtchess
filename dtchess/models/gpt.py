@@ -1,6 +1,7 @@
 import torch as t  # type: ignore
 import torch.nn as nn  # type: ignore
 from transformers import AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel  # type: ignore
+import wandb
 
 
 def create_model(
@@ -24,3 +25,14 @@ def create_model(
     model = model.to(device)
 
     return model, tokeniser
+
+
+def load_model(model_name: str) -> GPT2LMHeadModel:
+    wandb.init(project="dtchess")
+    artifact = wandb.use_artifact(f"{model_name}:latest")
+    artifact = artifact.download()
+
+    device = "cuda" if t.cuda.is_available() else "cpu"
+    model = t.load(f"{artifact}/{model_name}.pt", map_location=device)
+
+    return model

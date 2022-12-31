@@ -15,6 +15,16 @@ from dtchess.utils.config import TrainingConfig
 from dtchess.models.gpt import create_model
 
 
+def read_lines(filepath: str):
+    lines = []
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            lines += [line.strip("\n")]
+
+    return lines
+
+
+
 def cuda_stats() -> str:
     if not t.cuda.is_available():
         return "No CUDA detected!"
@@ -88,6 +98,9 @@ def parse_args() -> dict:
         help="number of random games to generate",
         default=10000,
     )
+    parser.add_argument("--model_name", help="Name of a model to load from wandb")
+    parser.add_argument("--prompt_file", help="Filepath to prompts to complete.")
+    parser.add_argument("--generate_tokens", type=int, default=10, help="Number of tokens to generate for each prompt.")
     argspace = parser.parse_args()
     return vars(argspace)
 
