@@ -5,6 +5,13 @@ This library fine-tunes language models to play chess. The end goal is to make t
 Chess is a useful example because it's likely that the model applies some form of internal optimisation to play, perhaps something like an internal search over board states. There are other games and environments that have similar properties, but chess seems particularly tractable because there is lots of public data, and it is fairly easy to translate it into sequences of tokens.
 
 
+# How does it work?
+The models trained with this library are going to be made available in pairs. One of the models in a pair will have an interesting property. The task is to use interpretability techniques to figure out which one that is. A base example is a pair of models, one of which is trained on real chess data (dtchess-standard), and the other on random chess games (dtchess-random). If we can tell one apart from the other with interpretability, it's likely we'll have learned something about what
+internal optimisation looks like for language models.
+
+Other examples include pairs of models playing slightly different games: standard chess/antichess, standard chess/crazyhouse, standard chess/modified version where the queen takes the place of the king. Here the goal would be to detect what the "goal" of a particular model is -- what it's trying to achieve when it plays the game. Variations of chess should look different to the standard version. 
+
+
 # Datasets
 Two datasets have been generated using this library, starting from the January 2021 games on [lichess](https://database.lichess.org/#standard_games). [dtchess-standard](https://huggingface.co/datasets/inwaves/dtchess-standard) was generated directly from the January PGN file. It contains ~100 million chess games, after filtering for normal termination conditions. [dtchess-random](https://huggingface.co/datasets/inwaves/dtchess-random) contains games with completely random moves, generated using the `python-chess` library. Moves are sampled uniformly at random from a list of legal moves at a given board state. There are currently 4.5 million such games. 
 
@@ -28,4 +35,12 @@ The bulk of the string is a sequence of game states, expressed as a slightly mod
 It is possible to visualise these FEN states using chess.com's [analysis](https://www.chess.com/analysis) module.
 
 # Models
-TODO
+[TODO: describe and link to the models]
+
+# Usage
+You can use this library in various ways:
+- you can further fine-tune the models above by loading them from huggingface and training them on more chess data, or you could fine-tune other pre-trained models on the data that already is available.
+- you can process more chess data from lichess, perhaps to increase the amount that is available, or to target a chess variant, like Crazyhouse.
+- you can generate additional chess games using the `generate_random_games` module. This uses the distribution of ELO, RET and RES from a particular set of real chess games. When random games are generated, their headers are sampled from these distributions, so that training data for random models looks exactly like the real deal.
+[TODO: explain how to do these]
+
