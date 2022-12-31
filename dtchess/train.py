@@ -37,7 +37,7 @@ def train(
             loss.backward()
             optimiser.step()
 
-            if i % config.checkpoint_every_n == 0:
+            if i > 0 and i % config.checkpoint_every_n == 0:
                 model_path = f"{config.ckpt_path}/gpt2-{wandb.run.id}.pt"
                 t.save(model, model_path)
                 model_artifact = wandb.Artifact(f"gpt2-{wandb.run.id}", type="model")
