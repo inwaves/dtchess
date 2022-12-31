@@ -1,6 +1,6 @@
 batch_size: 8
 betas: (0.9, 0.1)
-checkpoint_every_n: 50
+checkpoint_every_n: 500
 ckpt_path: ./ckpts/
 dataset: inwaves/dtchess-standard
 learning_rate: 1e-4

@@ -24,7 +24,6 @@ def read_lines(filepath: str):
     return lines
 
 
-
 def cuda_stats() -> str:
     if not t.cuda.is_available():
         return "No CUDA detected!"
@@ -100,7 +99,12 @@ def parse_args() -> dict:
     )
     parser.add_argument("--model_name", help="Name of a model to load from wandb")
     parser.add_argument("--prompt_file", help="Filepath to prompts to complete.")
-    parser.add_argument("--generate_tokens", type=int, default=10, help="Number of tokens to generate for each prompt.")
+    parser.add_argument(
+        "--generate_tokens",
+        type=int,
+        default=10,
+        help="Number of tokens to generate for each prompt.",
+    )
     argspace = parser.parse_args()
     return vars(argspace)
 

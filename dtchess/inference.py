@@ -2,10 +2,6 @@ import torch as t
 from dtchess.utils.utils import parse_args, read_lines
 from dtchess.models.gpt import create_model, load_model
 
-# TODO:
-#   - [x] test prompts are loaded correctly
-#   - [x] add functionality to specify how many tokens to generate
-#   - [x] maybe refactor the prompt reading thing into an util?
 
 if __name__ == "__main__":
     cl_args = parse_args()
@@ -18,8 +14,7 @@ if __name__ == "__main__":
 
     with t.inference_mode():
         generated_tokens = model.generate(
-            **prompts,
-            max_new_tokens=cl_args["generate_tokens"]
+            **prompts, max_new_tokens=cl_args["generate_tokens"]
         )
 
     generated_text = tokeniser.batch_decode(generated_tokens, skip_special_tokens=True)

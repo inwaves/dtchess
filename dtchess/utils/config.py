@@ -2,8 +2,13 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-INT_FIELDS = ("batch_size", "checkpoint_every_n",
-              "max_epochs", "num_epochs", "num_workers")
+INT_FIELDS = (
+    "batch_size",
+    "checkpoint_every_n",
+    "max_epochs",
+    "num_epochs",
+    "num_workers",
+)
 FLOAT_FIELDS = ("learning_rate", "weight_decay")
 TUPLE_FIELDS = "betas"
 
@@ -28,7 +33,7 @@ def generate_config(yaml_file: str) -> TrainingConfig:
     if not os.path.exists(yaml_file):
         tc = TrainingConfig()
     else:
-    # Otherwise parse the file.
+        # Otherwise parse the file.
         kwargs: dict[str, Any] = {}
         with open(yaml_file, "r", encoding="utf-8") as f:
             for line in f:
