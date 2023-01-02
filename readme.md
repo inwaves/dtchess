@@ -9,7 +9,7 @@ Chess is a useful example because it's likely that the model applies some form o
 The models trained with this library are going to be made available in pairs. One of the models in a pair will have an interesting property. The task is to use interpretability techniques to figure out which one that is. A base example is a pair of models, one of which is trained on real chess data (dtchess-standard), and the other on random chess games (dtchess-random). If we can tell one apart from the other with interpretability, it's likely we'll have learned something about what
 internal optimisation looks like for language models.
 
-Other examples include pairs of models playing slightly different games: standard chess/antichess, standard chess/crazyhouse, standard chess/modified version where the queen takes the place of the king. Here the goal would be to detect what the "goal" of a particular model is -- what it's trying to achieve when it plays the game. Variations of chess should look different to the standard version. 
+Other examples include pairs of models playing slightly different games: standard chess/king-of-the-hill, standard chess/horde chess, standard chess/modified version where the queen takes the place of the king. Here the goal would be to detect what the "goal" of a particular model is -- what it's trying to achieve when it plays the game. Variations of chess should look different to the standard version. 
 
 
 # Datasets
