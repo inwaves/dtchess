@@ -55,7 +55,7 @@ def read_games(input_filepath: str, game_queue: Queue) -> None:
 
 
 @timer(logger)
-def sequence_game(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
+def sequence_games(output_filepath: str, write_lock: Lock, game_queue: Queue) -> None:
     num_games: int = 0
     total_elapsed: float = 0
     game_string: str = ""
@@ -161,7 +161,9 @@ def setup():
     game_queue = Queue()
     reader_process = mp.Process(target=read_games, args=(input_filepath, game_queue))
     sequencing_processes = [
-        mp.Process(target=sequence_game, args=(output_filepath, write_lock, game_queue))
+        mp.Process(
+            target=sequence_games, args=(output_filepath, write_lock, game_queue)
+        )
         for _ in range(NUM_CORES - 1)
     ]
     return reader_process, sequencing_processes, game_queue

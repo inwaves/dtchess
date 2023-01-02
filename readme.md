@@ -38,9 +38,15 @@ It is possible to visualise these FEN states using chess.com's [analysis](https:
 [TODO: describe and link to the models]
 
 # Usage
-You can use this library in various ways:
-- you can further fine-tune the models above by loading them from huggingface and training them on more chess data, or you could fine-tune other pre-trained models on the data that already is available.
-- you can process more chess data from lichess, perhaps to increase the amount that is available, or to target a chess variant, like Crazyhouse.
-- you can generate additional chess games using the `generate_random_games` module. This uses the distribution of ELO, RET and RES from a particular set of real chess games. When random games are generated, their headers are sampled from these distributions, so that training data for random models looks exactly like the real deal.
-[TODO: explain how to do these]
+You can use this library in various ways.
 
+## Fine-tuning
+You can further fine-tune the models above by loading them from huggingface and training them on more chess data, or you could fine-tune other pre-trained models on the data that already is available.
+
+To load a model from huggingface, use their `transformers` library. An example is in `models/gpt.py`. By default, this library uses `wandb` to log training data as well as checkpoints. To load a checkpoint, use the `models.gpt.load_model` method.
+
+## Processing & generating more data
+DTchess allows you to process additional chess data in PGN format. You can supplement `dtchess-standard` to train better models, or you can target a new chess variant, like Crazyhouse. Given a PGN file containing many games, use the functionality in `utils.process_pgn_files` to process games into sequences of tokens. The utils are written so they work multiprocess, in order to speed up the computation. One or more processes play the role of "manager" and read game strings from the
+PGN file, then write them to a queue (`read_games`). Simultaneously, one or more -- typically more than 10 -- worker processes pop game strings from the queue and adapt them into the sequence format (`sequence_games`). Once a game is converted into a sequence with the correct format, it's written to a file controlled by a lock.
+
+It's also possible to generate additional chess games using the `generate_random_games` module. This uses the distribution of ELO, RET and RES from a particular set of real chess games. When random games are generated, their headers are sampled from these distributions, so that training data for random models looks exactly like the real deal. This module is also designed to work concurrently, and by default it spawns as many processes as there are CPU cores.
