@@ -10,9 +10,9 @@ import datasets
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from dtchess.utils.config import TrainingConfig
-from dtchess.models.gpt import create_model
+from dtchess.utils.model import load_pretrained_model, load_pretrained_tokeniser
 
 
 def read_lines(filepath: str):
@@ -112,22 +112,17 @@ def parse_args() -> dict:
 def training_setup(
     config: TrainingConfig,
 ) -> Tuple[
-    GPT2Tokenizer,
-    GPT2LMHeadModel,
-    optim.Adam,
-    Tuple[DataLoader, DataLoader],
-    nn.CrossEntropyLoss,
+    AutoTokenizer,
+    DataLoader,
 ]:
-    model, tokeniser = create_model()
-    optimiser = optim.Adam(model.parameters(), lr=config.learning_rate)
-    train_dataloader = preprocess_data(tokeniser, model, config)
-    loss_fn = nn.CrossEntropyLoss()
+    tokeniser = load_pretrained_tokeniser()
+    train_dataloader = preprocess_data(tokeniser, config)
 
-    return tokeniser, model, optimiser, train_dataloader, loss_fn
+    return tokeniser, train_dataloader
 
 
 def preprocess_data(
-    tokeniser: GPT2Tokenizer, model: GPT2LMHeadModel, config: TrainingConfig
+    tokeniser: AutoTokenizer, config: TrainingConfig
 ) -> DataLoader:
     """Preprocesses data for the model."""
 
@@ -137,7 +132,7 @@ def preprocess_data(
         lambda seq: tokeniser(
             seq["text"],
             padding="max_length",
-            max_length=model.transformer.wpe.num_embeddings,
+            max_length=tokeniser.model_max_len,
             truncation=True,
             return_tensors="pt",
         ),

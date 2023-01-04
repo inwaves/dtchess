@@ -1,14 +1,14 @@
 import torch as t
 import datasets
 from torch.utils.data import DataLoader
-from dtchess.models.gpt import create_model
+from dtchess.utils.model import load_pretrained_model
 from dtchess.utils.utils import cuda_stats
 
 device = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def prep():
-    model, tokeniser = create_model("gpt2")
+    model, tokeniser = load_pretrained_model("gpt2")
     dataset = datasets.load_dataset(
         "inwaves/dtchess-standard", streaming=True, split="train"
     )

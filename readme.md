@@ -43,7 +43,7 @@ You can use this library in various ways.
 ## Fine-tuning
 You can further fine-tune the models above by loading them from huggingface and training them on more chess data, or you could fine-tune other pre-trained models on the data that already is available.
 
-To load a model from huggingface, use their `transformers` library. An example is in `models/gpt.py`. By default, this library uses `wandb` to log training data as well as checkpoints. To load a checkpoint, use the `models.gpt.load_model` method.
+To load a model from huggingface, use their `transformers` library. An example is in `utils/model.py`. By default, this library uses `wandb` to log training data as well as checkpoints. To load a checkpoint, use the `models.gpt.load_model` method.
 
 ## Processing & generating more data
 DTchess allows you to process additional chess data in PGN format. You can supplement `dtchess-standard` to train better models, or you can target a new chess variant, like Crazyhouse. Given a PGN file containing many games, use the functionality in `utils.process_pgn_files` to process games into sequences of tokens. The utils are written so they work multiprocess, in order to speed up the computation. One or more processes play the role of "manager" and read game strings from the

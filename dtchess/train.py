@@ -4,10 +4,10 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import GPT2Model, GPT2Tokenizer
+from transformers import AutoTokenizer
 from dtchess.utils.utils import training_setup
 from dtchess.utils.config import generate_config, TrainingConfig
-import wandb
+import wandb    # type: ignore
 
 
 MAIN = __name__ == "__main__"
@@ -15,8 +15,7 @@ device = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def train(
-    tokeniser: GPT2Tokenizer,
-    model: GPT2Model,
+    tokeniser: AutoTokenizer,
     optimiser: optim.Adam,
     train_dataloader: DataLoader,
     loss_fn: nn.CrossEntropyLoss,

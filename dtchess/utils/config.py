@@ -5,9 +5,8 @@ from typing import Any
 INT_FIELDS = (
     "batch_size",
     "checkpoint_every_n",
-    "max_epochs",
     "num_epochs",
-    "num_workers",
+    "num_shards",
 )
 FLOAT_FIELDS = ("learning_rate", "weight_decay")
 TUPLE_FIELDS = "betas"
@@ -23,7 +22,7 @@ class TrainingConfig:
     learning_rate: float = 1e-4
     log_every_n: int = 100
     num_epochs: int = 10
-    num_workers: int = 0
+    num_shards: int = 1
     weight_decay: float = 0.1
 
 
