@@ -78,8 +78,6 @@ if MAIN:
 
     world_size = train_config.num_shards
 
-    breakpoint()
-
     mp.spawn(
         train,
         args=(tokeniser, train_config, world_size),
