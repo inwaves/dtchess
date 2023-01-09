@@ -26,7 +26,7 @@ def train(
     world_size: int,
 ) -> AutoModelForCausalLM:
 
-    breakpoint()
+    print(f"{rank=}, {world_size=}")
 
     dist_setup(rank, world_size)
     train_dataloader = None
