@@ -19,13 +19,18 @@ device: Literal["cuda", "cpu"] = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def train(
-    tokeniser: AutoTokenizer,
-    # train_dataloader: DataLoader,
-    config: TrainingConfig,
-    rank: int,
-    world_size: int,
+    *args
+    # tokeniser: AutoTokenizer,
+    # # train_dataloader: DataLoader,
+    # config: TrainingConfig,
+    # rank: int,
+    # world_size: int,
 ) -> AutoModelForCausalLM:
 
+    print(*args)
+
+    rank, world_size = None, None
+    tokeniser= None
     print(f"{rank=}, {world_size=}")
 
     dist_setup(rank, world_size)
