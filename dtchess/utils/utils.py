@@ -127,7 +127,7 @@ def preprocess_data(tokeniser: AutoTokenizer, config: TrainingConfig) -> DataLoa
         lambda seq: tokeniser(
             seq["text"],
             padding="max_length",
-            max_length=tokeniser.model_max_len,
+            max_length=tokeniser.model_max_length,
             truncation=True,
             return_tensors="pt",
         ),
