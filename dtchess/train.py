@@ -1,9 +1,7 @@
-import os
 import dataclasses
 import torch as t
 import torch.optim as optim
 import torch.multiprocessing as mp
-import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -29,6 +27,7 @@ def train(
 ) -> AutoModelForCausalLM:
 
     breakpoint()
+
     dist_setup(rank, world_size)
     train_dataloader = None
 
@@ -44,8 +43,6 @@ def train(
     # Start watching the training process.
     wandb.init(project="dtchess", config=dataclasses.asdict(config))
     wandb.watch(ddp_model, log_freq=config.log_every_n)
-
-    breakpoint()
 
     for _ in range(config.num_epochs):  # Probably only one epoch.
         for (i, tokenised_sequences) in enumerate(tqdm(train_dataloader)):
