@@ -8,14 +8,14 @@ from typing import Any, Callable, Tuple
 import chess
 import datasets
 import torch.nn as nn
-import torch.optim as optim
+import torch.distributed as dist
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 from dtchess.utils.config import TrainingConfig
-from dtchess.utils.model import load_pretrained_model, load_pretrained_tokeniser
+from dtchess.utils.model import load_pretrained_tokeniser
 
 
-def read_lines(filepath: str):
+def read_lines(filepath: str) -> list[Any]:
     lines = []
     with open(filepath, "r", encoding="utf-8") as f:
         for line in f:
@@ -111,19 +111,14 @@ def parse_args() -> dict:
 
 def training_setup(
     config: TrainingConfig,
-) -> Tuple[
-    AutoTokenizer,
-    DataLoader,
-]:
+) -> Tuple[AutoTokenizer, DataLoader,]:
     tokeniser = load_pretrained_tokeniser()
     train_dataloader = preprocess_data(tokeniser, config)
 
     return tokeniser, train_dataloader
 
 
-def preprocess_data(
-    tokeniser: AutoTokenizer, config: TrainingConfig
-) -> DataLoader:
+def preprocess_data(tokeniser: AutoTokenizer, config: TrainingConfig) -> DataLoader:
     """Preprocesses data for the model."""
 
     dataset = datasets.load_dataset(config.dataset, streaming=True, split="train")
@@ -138,9 +133,22 @@ def preprocess_data(
         ),
         batched=True,
     )
-    train_dl = DataLoader(input_ids, batch_size=config.batch_size)
+    train_dl = DataLoader(
+        input_ids, batch_size=config.batch_size, num_workers=config.num_shards
+    )
     return train_dl
 
 
 def board_to_sequence(board: chess.Board) -> str:
     return board.fen().split(" ")[0]
+
+
+def dist_setup(rank, world_size) -> None:
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "12355"
+
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+
+def dist_cleanup() -> None:
+    dist.destroy_process_group()
