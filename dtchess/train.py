@@ -22,13 +22,14 @@ device: Literal["cuda", "cpu"] = "cuda" if t.cuda.is_available() else "cpu"
 
 def train(
     tokeniser: AutoTokenizer,
-    train_dataloader: DataLoader,
+    # train_dataloader: DataLoader,
     config: TrainingConfig,
     rank: int,
     world_size: int,
 ) -> AutoModelForCausalLM:
 
     dist_setup(rank, world_size)
+    train_dataloader = None
 
     # Instantiate a replica of the model.
     model: AutoModelForCausalLM = load_pretrained_model(tokeniser=tokeniser).to(rank)
@@ -42,6 +43,8 @@ def train(
     # Start watching the training process.
     wandb.init(project="dtchess", config=dataclasses.asdict(config))
     wandb.watch(ddp_model, log_freq=config.log_every_n)
+
+    breakpoint()
 
     for _ in range(config.num_epochs):  # Probably only one epoch.
         for (i, tokenised_sequences) in enumerate(tqdm(train_dataloader)):
@@ -72,11 +75,13 @@ if MAIN:
     train_config: TrainingConfig = generate_config("./dtchess/config.yaml")
     tokeniser, train_dataloader = training_setup(train_config)
 
-    world_size = t.cuda.device_count()
+    world_size = train_config.num_shards
+
+    breakpoint()
 
     mp.spawn(
         train,
-        args=(tokeniser, train_dataloader, train_config, world_size),
+        args=(tokeniser, train_config, world_size),
         nprocs=1,  # Running this on a single node with multiple GPUs.
         join=True,
     )
