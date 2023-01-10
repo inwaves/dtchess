@@ -19,18 +19,13 @@ device: Literal["cuda", "cpu"] = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def train(
-    *args
-    # tokeniser: AutoTokenizer,
-    # # train_dataloader: DataLoader,
-    # config: TrainingConfig,
-    # rank: int,
-    # world_size: int,
+    rank: int,
+    world_size: int,
+    tokeniser: AutoTokenizer,
+    # train_dataloader: DataLoader,
+    config: TrainingConfig,
 ) -> AutoModelForCausalLM:
 
-    print(*args)
-
-    rank, world_size = None, None
-    tokeniser= None
     print(f"{rank=}, {world_size=}")
 
     dist_setup(rank, world_size)
@@ -82,7 +77,7 @@ if MAIN:
 
     mp.spawn(
         train,
-        args=(tokeniser, train_config, world_size),
+        args=(world_size, tokeniser, train_config),
         nprocs=1,  # Running this on a single node with multiple GPUs.
         join=True,
     )
