@@ -72,9 +72,9 @@ def train(
 if MAIN:
     train_config: TrainingConfig = generate_config("./dtchess/config.yaml")
     tokeniser, train_dataloader = training_setup(train_config)
-
     world_size = train_config.num_shards
 
+    mp.set_start_method("spawn")
     mp.spawn(
         train,
         args=(world_size, tokeniser, train_config),
